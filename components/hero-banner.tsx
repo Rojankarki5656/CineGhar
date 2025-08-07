@@ -36,7 +36,7 @@ export function HeroBanner({ title, description, imageUrl, year, duration, ratin
         <p className="text-gray-300 mb-6 line-clamp-3 md:line-clamp-4 text-sm md:text-base lg:text-lg">{description}</p>
 
         <div className="flex flex-wrap gap-4">
-          <Link href={`/watch/1`}>
+          <Link href={`/watch/2`}>
             <Button className="bg-red-600 hover:bg-red-700 text-white gap-2">
               <Play className="w-5 h-5 fill-white" />
               Play

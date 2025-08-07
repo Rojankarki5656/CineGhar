@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Head from "next/head";
 
 export default function LandingPage() {
   const router = useRouter();
