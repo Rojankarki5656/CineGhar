@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/utils/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -37,22 +36,7 @@ export default function LoginPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
 
-      if (error) {
-        setError(error.message)
-        setLoading(false)
-        return
-      }
-
-      if (data.user) {
-        // Save user ID to local storage
-        localStorage.setItem("userId", data.user.id)
-        router.push("/home") // Redirect to home page
-      }
     } catch (err) {
       setError("An unexpected error occurred")
       setLoading(false)
