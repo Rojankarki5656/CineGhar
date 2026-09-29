@@ -1,5 +1,109 @@
 // app/lib/movies.ts
+// lib/movies.ts
+
+export interface Person {
+  id: string;
+  name: string;
+  link: string;
+}
+
+export interface CastMember extends Person {
+  characters: string[];
+  image: string | null;
+}
+
+export interface MovieImage {
+  link: string | null;
+  width?: number | null;
+  height?: number | null;
+}
+
+export interface Trailer {
+  id: string;
+  title: string;
+  link: string;
+  duration: number;       // seconds
+  thumbnail: string | null;
+}
+
+export interface BoxOffice {
+  budget: { amount: number; currency: string } | null;
+  openingWeekend:
+    | {
+        amount: number;
+        currency: string;
+        weekend_end_date: string;
+        theater_count: number;
+      }
+    | null;
+  grossWorldwide: { amount: number; currency: string } | null;
+}
+
+/** Trimmed shape used by MovieRow / card grids */
+export interface MovieCard {
+  id: string;
+  title: string;
+  image: string;
+  year: string;
+  rating: string;
+  genres?: string[];
+  description?: string;
+}
+
+/** Full detail shape returned by useDetailMovies */
 export interface Movie {
+  id: string;
+  imdbId: string | null;
+  title: string;
+  originalTitle: string | null;
+  link: string;
+  type: string;
+  isSeries: boolean;
+  isEpisode: boolean;
+  year: number | null;
+  endYear: number | null;
+  releaseDate: string | null;
+  runtime: number | null;          // minutes
+  certificate: string | null;
+  plot: string | null;
+  genres: string[];
+
+  rating: number | null;           // 0–10
+  voteCount: number;
+  topRank: number | null;
+
+  metascore: number | null;
+  metascoreReviewCount: number;
+
+  directors: Person[];
+  creators: Person[];
+  writers: Person[];
+  stars: Person[];
+  topCast: CastMember[];
+  totalCast: number;
+
+  trailer: Trailer | null;
+
+  image: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
+
+  boxOffice: BoxOffice | null;
+
+  seasons: number | null;
+
+  similarTitles: Movie[];
+
+  countriesOfOrigin: string[];
+  spokenLanguages: string[];
+  country: string | null;
+}
+
+/** 
+ * Legacy shape — kept only if other parts of the app still import it.
+ * Prefer `MovieCard` or `Movie` going forward.
+ */
+export interface LegacyMovie {
   id: string;
   title: string;
   year: string;
@@ -14,546 +118,3 @@ export interface Movie {
   language?: string;
   videoUrl: string;
 }
-
-export const movies: Movie[] = [
-  {
-    id: "1",
-    title: "Kabaddi 4: The Final Match",
-    year: "2022",
-    duration: "2h 15m",
-    rating: "4.7",
-    genres: ["Comedy", "Drama", "Sport"],
-    description: "The final installment in the beloved Kabaddi series brings our heroes back for one last epic match that will determine the future of their village.",
-    director: "Ram Babu Gurung",
-    cast: ["Dayahang Rai", "Saugat Malla", "Miruna Magar", "Karma Shakya"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Kabaddi_4_poster.jpg/250px-Kabaddi_4_poster.jpg",
-    releaseDate: "September 15, 2022",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=7WR3qzB40V8",
-  },
-  {
-    id: "2",
-    title: "Chiso Maanche",
-    year: "2023",
-    duration: "2h 15m",
-    rating: "4.3",
-    genres: ["Drama"],
-    description: "A poignant Nepali drama exploring human struggles and resilience in a changing world.",
-    director: "Arpan Thapa",
-    cast: ["Arpan Thapa", "Swastima Khadka", "Desh Bhakta Khanal"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/0/02/Chiso_Manchhe.jpg",
-    releaseDate: "January 1, 2023",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=A8Ev1T5_uIs&t=231s",
-  },
-  {
-    id: "3",
-    title: "Pashupati Prasad",
-    year: "2016",
-    duration: "2h 20m",
-    rating: "4.8",
-    genres: ["Drama"],
-    description: "A touching story of a young man’s journey through loss and redemption in Kathmandu.",
-    director: "Dipendra K Khanal",
-    cast: ["Khagendra Lamichhane", "Rabindra Singh Baniya"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/a/a7/Pashupati_Prasad_poster.jpg",
-    releaseDate: "January 1, 2016",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=xGOIMWh2FfE",
-  },
-  {
-    id: "4",
-    title: "Chhakka Panja 4",
-    year: "2023",
-    duration: "2h 10m",
-    rating: "4.2",
-    genres: ["Comedy", "Family"],
-    description: "The latest in the popular Chhakka Panja series, filled with humor and social commentary.",
-    director: "Deepa Shree Niraula",
-    cast: ["Deepak Raj Giri", "Deepa Shree Niraula", "Kedar Ghimire"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/1/1e/Chhakka_Panja_4.jpg",
-    releaseDate: "March 1, 2023",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=06LGYNAB5lY",
-  },
-  {
-    id: "5",
-    title: "Talakjung vs Tulke",
-    year: "2014",
-    duration: "2h 15m",
-    rating: "4.6",
-    genres: ["Drama"],
-    description: "A story of rivalry and redemption set against the backdrop of Nepal’s civil war.",
-    director: "Nischal Basnet",
-    cast: ["Khum Narayan Bhusal", "Dayahang Rai"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/1/13/Talakjung_vs_Tulke_movie_poster.jpg",
-    releaseDate: "January 1, 2014",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=Zl-JXV0JTzw",
-  },
-  {
-    id: "6",
-    title: "Bulbul",
-    year: "2019",
-    duration: "2h 10m",
-    rating: "4.4",
-    genres: ["Drama"],
-    description: "A heartfelt tale of a tempo driver navigating life’s challenges in Kathmandu.",
-    director: "Binod Paudel",
-    cast: ["Swastima Khadka", "Mukund Bahadur Thapa"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/f/f3/Bulbul_-_film_poster.jpg",
-    releaseDate: "January 1, 2019",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=VIDEO_ID_6",
-  },
-  {
-    id: "7",
-    title: "Sano Mann",
-    year: "2018",
-    duration: "2h 5m",
-    rating: "4.3",
-    genres: ["Romance", "Drama"],
-    description: "A romantic drama exploring love and relationships in modern Nepal.",
-    director: "Sujeet Bidari",
-    cast: ["Shristi Shrestha", "Ayushman Deshraj"],
-    imageUrl: "https://www.thefilmnepal.com/uploads/medias/sanomann.jpg",
-    releaseDate: "January 1, 2018",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=442Aw7Dj_2w",
-  },
-  {
-    id: "8",
-    title: "Saili",
-    year: "2023",
-    duration: "2h 10m",
-    rating: "4.1",
-    genres: ["Drama"],
-    description: "A story of love and sacrifice in rural Nepal.",
-    director: "Ram Babu Gurung",
-    cast: ["Dayahang Rai", "Menuka Pradhan"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BNDg0NmVmYjEtYzU4MC00M2QwLWIzNzAtZWM3ZjJlMGQzZTBjXkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "January 1, 2023",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=p8_YI_dNImM",
-  },
-  {
-    id: "9",
-    title: "Garud Puran",
-    year: "2023",
-    duration: "2h 15m",
-    rating: "4.0",
-    genres: ["Drama"],
-    description: "A modern take on traditional Nepali beliefs and family dynamics.",
-    director: "Suman Upreti",
-    cast: ["Karma Shakya", "Priyanka Karki"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BMDdkODM3MDAtZTQ2MS00MDVjLWJkMTItMmUzNTcwNmQ1ZDZlXkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "January 1, 2023",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=5E-wEcf3t1Y",
-  },
-  {
-    id: "10",
-    title: "Cha Maya Chapakkai",
-    year: "2023",
-    duration: "2h 10m",
-    rating: "4.2",
-    genres: ["Comedy", "Romance"],
-    description: "A lighthearted romantic comedy about love and misunderstandings.",
-    director: "Dipendra Lama",
-    cast: ["Deepak Raj Giri", "Kedar Ghimire"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BOWI1YTNhZjAtYzhmYS00ZmQ0LTg0NDgtYzEwZWQ3MGRkNTUwXkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "January 1, 2023",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=JvTaYFnFInY",
-  },
-  {
-    id: "11",
-    title: "Lakka Jawan",
-    year: "2023",
-    duration: "2h 5m",
-    rating: "3.9",
-    genres: ["Comedy"],
-    description: "A comedic tale of youthful adventures and mishaps.",
-    director: "Seshraj Bhattarai",
-    cast: ["Dilip Rayamajhi", "Priyanka Karki"],
-    imageUrl: "https://www.thefilmnepal.com/uploads/medias/lakkajawan.jpg",
-    releaseDate: "January 1, 2023",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=KwMI_u4CSzc",
-  },
-  {
-    id: "12",
-    title: "Gorkha Warrior",
-    year: "2023",
-    duration: "2h 20m",
-    rating: "4.5",
-    genres: ["Action", "Drama"],
-    description: "An action-packed story of bravery and sacrifice inspired by Gorkha soldiers.",
-    director: "Milan Chams",
-    cast: ["Ritesh Chams", "Suryamala Sharma"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BZmVkMWQ2NGMtYjNiMS00MjcyLWEwZTItZTU2MTk2MzFhMmRjXkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "January 1, 2023",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=rEog10wE6A0",
-  },
-  {
-    id: "13",
-    title: "Loot 2",
-    year: "2017",
-    duration: "2h 15m",
-    rating: "4.5",
-    genres: ["Action", "Crime"],
-    description: "The thrilling sequel to Loot, following the aftermath of a heist.",
-    director: "Nischal Basnet",
-    cast: ["Saugat Malla", "Dayahang Rai"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BYjAxOGIxMmQtOGEzYS00NDBiLTkyZGQtMzM4MGQ5YzIzMDk2XkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "January 1, 2017",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=7uVU6QAvgG8",
-  },
-  {
-    id: "14",
-    title: "Machha Machha",
-    year: "2019",
-    duration: "2h 10m",
-    rating: "4.0",
-    genres: ["Action", "Comedy"],
-    description: "A fun action-comedy about a group of friends caught in a chaotic adventure.",
-    director: "Jeevan Rijal",
-    cast: ["Saugat Malla", "Anup Bikram Shahi"],
-    imageUrl: "https://www.thefilmnepal.com/uploads/medias/machhamachha.jpg",
-    releaseDate: "January 1, 2019",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=bV2e2bnu9LQ",
-  },
-  {
-    id: "15",
-    title: "Bir Bikram",
-    year: "2016",
-    duration: "2h 15m",
-    rating: "4.2",
-    genres: ["Action", "Romance"],
-    description: "A romantic action drama about friendship and love.",
-    director: "Milan Chams",
-    cast: ["Dayahang Rai", "Anup Bikram Shahi"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Birbikramposter.jpg/250px-Birbikramposter.jpg",
-    releaseDate: "January 1, 2016",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=YZ2hdVphpaI",
-  },
-  {
-    id: "16",
-    title: "Bir Bikram 2",
-    year: "2019",
-    duration: "2h 10m",
-    rating: "4.3",
-    genres: ["Action", "Romance"],
-    description: "The sequel to Bir Bikram, continuing the saga of love and action.",
-    director: "Milan Chams",
-    cast: ["Paul Shah", "Barsha Siwakoti"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/7/78/Bir_Bikram_2.jpg",
-    releaseDate: "January 1, 2019",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=QupWAlzGAHE",
-  },
-  {
-    id: "17",
-    title: "Jatra",
-    year: "2016",
-    duration: "2h 15m",
-    rating: "4.4",
-    genres: ["Action", "Comedy"],
-    description: "A comedic heist story filled with twists and turns.",
-    director: "Pradeep Bhattarai",
-    cast: ["Bipin Karki", "Rabindra Jha"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/8/8f/Jatranepalimovieposter.jpg",
-    releaseDate: "January 1, 2016",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=SLTQeRlb0dk",
-  },
-  {
-    id: "18",
-    title: "Kusume Rumal",
-    year: "1985",
-    duration: "2h 30m",
-    rating: "4.9",
-    genres: ["Romance", "Drama"],
-    description: "A classic Nepali love story that defined a generation.",
-    director: "Tulsi Ghimire",
-    cast: ["Bhuwan K.C.", "Tripti Nadakar"],
-    imageUrl: "https://www.thefilmnepal.com/uploads/medias/kusumerumal.jpg",
-    releaseDate: "January 1, 1985",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=er7Pb0-ToHo",
-  },
-  {
-    id: "19",
-    title: "Balidaan",
-    year: "1996",
-    duration: "2h 25m",
-    rating: "4.8",
-    genres: ["Drama"],
-    description: "A patriotic drama about sacrifice and honor.",
-    director: "Tulsi Ghimire",
-    cast: ["Hari Bansha Acharya", "Madhu Shahi"],
-    imageUrl: "https://www.thefilmnepal.com/uploads/medias/balidaan.jpg",
-    releaseDate: "January 1, 1996",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=gmZq4wLOaiw",
-  },
-  {
-    id: "20",
-    title: "Maitighar",
-    year: "1966",
-    duration: "2h 20m",
-    rating: "4.7",
-    genres: ["Drama"],
-    description: "One of Nepal’s first feature films, a story of family and tradition.",
-    director: "B.S. Thapa",
-    cast: ["Mala Sinha", "C.P. Lohani"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0a/Maitighar.jpg/250px-Maitighar.jpg",
-    releaseDate: "January 1, 1966",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=Orf6uL_KMf0",
-  },
-  {
-    id: "21",
-    title: "Darpan Chhaya",
-    year: "2001",
-    duration: "2h 30m",
-    rating: "4.9",
-    genres: ["Romance", "Drama"],
-    description: "A timeless love story of loss and reunion.",
-    director: "Tulsi Ghimire",
-    cast: ["Dilip Rayamajhi", "Niruta Singh"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/b/b3/DarpanChaya.jpg",
-    releaseDate: "January 1, 2001",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=SQG-vIuCe_4",
-  },
-  {
-    id: "22",
-    title: "Caravan",
-    year: "2002",
-    duration: "2h 20m",
-    rating: "4.8",
-    genres: ["Drama"],
-    description: "A story of human trafficking and survival in the Himalayas.",
-    director: "Eric Valli",
-    cast: ["Thilen Lhondup", "Lhakpa Tsamchoe"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/0/0d/Himalaya_film.jpg",
-    releaseDate: "January 1, 2002",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=gMrK7oyzjuk",
-  },
-  {
-    id: "23",
-    title: "Numafung",
-    year: "2001",
-    duration: "2h 15m",
-    rating: "4.6",
-    genres: ["Drama"],
-    description: "A story of love and cultural conflict in eastern Nepal.",
-    director: "Nabin Subba",
-    cast: ["Anupama Subba", "Niwash Limbu"],
-    imageUrl: "https://www.thefilmnepal.com/uploads/medias/numafung.jpg",
-    releaseDate: "January 1, 2001",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=5vhLNNoAYSA",
-  },
-  {
-    id: "24",
-    title: "Chhakka Panja",
-    year: "2016",
-    duration: "2h 10m",
-    rating: "4.5",
-    genres: ["Comedy", "Family"],
-    description: "A hilarious comedy tackling social issues with a family-friendly tone.",
-    director: "Deepa Shree Niraula",
-    cast: ["Deepak Raj Giri", "Priyanka Karki"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BYTY3N2ZhMTQtODE0OC00YTlkLWFiMzMtYjI1OTY2ZjdlZGQwXkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "January 1, 2016",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=u5NJUF-M6pc&rco=1",
-  },
-  {
-    id: "25",
-    title: "Chhakka Panja 2",
-    year: "2017",
-    duration: "2h 10m",
-    rating: "4.4",
-    genres: ["Comedy", "Family"],
-    description: "The sequel to Chhakka Panja, continuing the comedic adventures.",
-    director: "Deepa Shree Niraula",
-    cast: ["Deepak Raj Giri", "Swastima Khadka"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/0/06/Chhakka_Panja_2_poster.jpeg/250px-Chhakka_Panja_2_poster.jpeg",
-    releaseDate: "January 1, 2017",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=q1BzJ6na4Nc",
-  },
-  {
-    id: "26",
-    title: "Chhakka Panja 3",
-    year: "2018",
-    duration: "2h 10m",
-    rating: "4.3",
-    genres: ["Comedy", "Family"],
-    description: "The third installment of the Chhakka Panja series, packed with laughs.",
-    director: "Deepa Shree Niraula",
-    cast: ["Deepak Raj Giri", "Deepa Shree Niraula"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/4/4e/Chhakka_panja_three_ver2.jpg",
-    releaseDate: "January 1, 2018",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=F9fY5tCg2vc",
-  },
-  {
-    id: "27",
-    title: "Woda Number 6",
-    year: "2018",
-    duration: "2h 5m",
-    rating: "4.2",
-    genres: ["Comedy", "Family"],
-    description: "A comedic story of friends navigating life’s challenges.",
-    director: "Ujwal Ghimire",
-    cast: ["Dayahang Rai", "Kedar Ghimire"],
-    imageUrl: "https://www.thefilmnepal.com/uploads/medias/wodanumber6.jpg",
-    releaseDate: "January 1, 2018",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=HkMh43hJ_tc",
-  },
-  {
-    id: "28",
-    title: "Shatru Gate",
-    year: "2018",
-    duration: "2h 10m",
-    rating: "4.1",
-    genres: ["Comedy", "Family"],
-    description: "A family-friendly comedy about rivalry and reconciliation.",
-    director: "Madan Ghimire",
-    cast: ["Hari Bansha Acharya", "Paul Shah"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/e/ec/Shatru_Gate.jpg",
-    releaseDate: "January 1, 2018",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=zF4THcBXnYs",
-  },
-  {
-    id: "29",
-    title: "Salaar: Part 1 – Ceasefire",
-    year: "2023",
-    duration: "2h 55m",
-    rating: "7.5",
-    genres: ["Action", "Thriller"],
-    description: "In a violent city ruled by criminal factions, a fierce leader rises to bring justice and vengeance.",
-    director: "Prashanth Neel",
-    cast: ["Prabhas", "Prithviraj Sukumaran", "Shruti Haasan"],
-    imageUrl: "https://imgs.search.brave.com/m2S7DhYD0Ol-fvTtVibY4eoGE39DoCRqtPu92p8nbNc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvaGQvc2Fs/YWFyLW1vdmllLXBv/c3Rlci1oZHg1cnRv/aW1tczZ6djd6Lmpw/Zw",
-    releaseDate: "December 22, 2023",
-    language: "Hindi",
-    videoUrl: "https://archive.org/embed/salaar-part-1-s",
-  },
-  {
-    id: "30",
-    title: "Loot",
-    year: "2012",
-    duration: "2h 15m",
-    rating: "4.7",
-    genres: ["Action", "Crime"],
-    description: "A thrilling heist movie set in Kathmandu, following a group of friends planning a bank robbery.",
-    director: "Nischal Basnet",
-    cast: ["Saugat Malla", "Dayahang Rai", "Karma Shakya"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/c/c3/Loot_2012_film.jpg",
-    releaseDate: "January 1, 2012",
-    language: "Nepali",
-    videoUrl: "https://www.youtube.com/watch?v=8QzD68BOFJI",
-  },
-    {
-    id: "31",
-    title: "Animal",
-    year: "2023",
-    duration: "3h 21m",
-    rating: "7.2",
-    genres: ["Action", "Crime", "Drama"],
-    description: "A son’s obsessive love for his father leads to a violent saga of revenge and loyalty, unraveling dark family secrets.",
-    director: "Sandeep Reddy Vanga",
-    cast: ["Ranbir Kapoor", "Anil Kapoor", "Bobby Deol", "Rashmika Mandanna"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/9/90/Animal_%282023_film%29_poster.jpg",
-    releaseDate: "December 1, 2023",
-    language: "Hindi",
-    videoUrl: "https://www.youtube.com/watch?v=8A1r-c5TGJA",
-  },
-  {
-    id: "32",
-    title: "Jawan",
-    year: "2023",
-    duration: "2h 49m",
-    rating: "7.5",
-    genres: ["Action", "Thriller"],
-    description: "A vigilante with a mysterious past takes on corruption, leading a high-stakes battle for justice with dual identities.",
-    director: "Atlee",
-    cast: ["Shah Rukh Khan", "Nayanthara", "Vijay Sethupathi", "Deepika Padukone"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BMGExNGI1NDktOWI2Mi00NDM3LWIxMmQtNTQxYTgzMzI0MTA1XkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "September 7, 2023",
-    language: "Hindi",
-    videoUrl: "https://www.youtube.com/watch?v=COvFDbnTJNI",
-  },
-  {
-    id: "33",
-    title: "Pathaan",
-    year: "2023",
-    duration: "2h 26m",
-    rating: "7.0",
-    genres: ["Action", "Thriller", "Spy"],
-    description: "An exiled spy returns to thwart a terrorist plot, teaming up with allies in a high-octane mission to save the nation.",
-    director: "Siddharth Anand",
-    cast: ["Shah Rukh Khan", "Deepika Padukone", "John Abraham"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BZjA3YTI1ZTItZGY5Ni00MzQyLTg2NDYtMzc3NGY5NzEwYmQxXkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "January 25, 2023",
-    language: "Hindi",
-    videoUrl: "https://archive.org/embed/pathaan-2023-hindi-720p-web-dl-esub-bolly-flix",
-  },
-  {
-    id: "34",
-    title: "War 2",
-    year: "2025",
-    duration: "2h 50m",
-    rating: "7.8",
-    genres: ["Action", "Thriller", "Spy"],
-    description: "The sequel to War, featuring intense espionage and action as elite agents face new global threats.",
-    director: "Ayan Mukerji",
-    cast: ["Hrithik Roshan", "Aamir Khan", "Kiara Advani"],
-    imageUrl: "https://m.media-amazon.com/images/M/MV5BMTFjYzM5Y2ItN2Q3YS00YzBlLTllNzYtNTkzZjBmY2Y5NmEwXkEyXkFqcGc@._V1_.jpg",
-    releaseDate: "August 14, 2025",
-    language: "Hindi",
-    videoUrl: "https://www.youtube.com/watch?v=placeholder",
-  },
-  {
-    id: "35",
-    title: "Tiger 3",
-    year: "2023",
-    duration: "2h 35m",
-    rating: "6.8",
-    genres: ["Action", "Thriller", "Spy"],
-    description: "Tiger and Zoya return to tackle a personal vendetta and a national crisis, blending espionage with high-stakes action.",
-    director: "Maneesh Sharma",
-    cast: ["Salman Khan", "Katrina Kaif", "Emraan Hashmi"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/f/f8/Tiger_3_poster.jpg",
-    releaseDate: "November 12, 2023",
-    language: "Hindi",
-    videoUrl: "https://www.youtube.com/watch?v=vEjTUDjjU6Y",
-  },
-  {
-    id: "36",
-    title: "Fighter",
-    year: "2024",
-    duration: "2h 46m",
-    rating: "7.3",
-    genres: ["Action", "Thriller", "War"],
-    description: "Elite Indian Air Force pilots form a special unit to counter terrorist threats, facing intense aerial battles and personal sacrifices.",
-    director: "Siddharth Anand",
-    cast: ["Hrithik Roshan", "Deepika Padukone", "Karan Singh Grover"],
-    imageUrl: "https://upload.wikimedia.org/wikipedia/en/d/df/Fighter_film_teaser.jpg",
-    releaseDate: "January 25, 2024",
-    language: "Hindi",
-    videoUrl: "https://www.youtube.com/watch?v=6amIq_mP4fc",
-  },
-];

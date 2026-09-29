@@ -1,324 +1,539 @@
+// app/watch/[id]/page.tsx
 "use client";
 
-import { use, useState, useCallback, useRef, useEffect, Suspense } from "react";
-import Link from "next/link";
-import dynamic from "next/dynamic";
-import type ReactPlayerType from "react-player";
-import { ArrowLeft, Maximize, Minimize, Pause, Play, Settings, Volume2, VolumeX } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { movies } from "@/lib/movies";
+  use,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowLeft,
+  Maximize,
+  Minimize,
+  Info,
+  Loader2,
+  Tv,
+  Star,
+  Clock,
+  Calendar,
+  Globe,
+  Film,
+  ExternalLink,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useDetailMovies } from "@/hooks/movieseDetailService";
 
-// Dynamically import ReactPlayer, disabling SSR
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+const MOVIE_PROVIDER = "https://vidsrc.buzz/embed/movie";
+const TV_PROVIDER = "https://vidsrc.buzz/embed/tv";
 
-export default function WatchPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const movieId = resolvedParams.id;
+/* ---------- Types & helpers ---------- */
 
-  const movie = movies.find((m) => m.id === movieId);
+interface SeasonInfo {
+  number: number;
+  episodeCount: number;
+}
 
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [showControls, setShowControls] = useState(true); // Control visibility
-  const playerRef = useRef<ReactPlayerType>(null);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+function extractSeasons(data: any): SeasonInfo[] {
+  const raw = data?.seasons;
 
-  const togglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
-  const toggleMute = useCallback(() => setIsMuted((prev) => !prev), []);
-  const toggleFullscreen = useCallback(() => {
-    if (!isFullscreen) {
-      document.documentElement.requestFullscreen().catch((err) => console.error("Fullscreen error:", err));
-    } else {
-      document.exitFullscreen().catch((err) => console.error("Exit fullscreen error:", err));
+  if (raw == null) return [{ number: 1, episodeCount: 30 }];
+
+  // Object form: { count, seasons: ["1"], total_episodes, is_ongoing }
+  if (!Array.isArray(raw) && typeof raw === "object") {
+    const seasonList: string[] = Array.isArray(raw.seasons) ? raw.seasons : [];
+    const totalEpisodes =
+      typeof raw.total_episodes === "number" && raw.total_episodes > 0
+        ? raw.total_episodes
+        : 30;
+    const seasonCount =
+      typeof raw.count === "number" && raw.count > 0
+        ? raw.count
+        : seasonList.length || 1;
+
+    if (seasonList.length > 0) {
+      const perSeason = seasonList.length === 1 ? totalEpisodes : 30;
+      return seasonList
+        .map((s) => Number(s))
+        .filter((n) => Number.isFinite(n) && n > 0)
+        .map((n) => ({ number: n, episodeCount: perSeason }))
+        .sort((a, b) => a.number - b.number);
     }
-    setIsFullscreen((prev) => !prev);
-  }, [isFullscreen]);
 
-  // Auto-hide controls after 4 seconds of inactivity
-  const resetControlsTimeout = useCallback(() => {
-    if (controlsTimeoutRef.current) {
-      clearTimeout(controlsTimeoutRef.current);
+    return Array.from({ length: seasonCount }, (_, i) => ({
+      number: i + 1,
+      episodeCount: seasonCount === 1 ? totalEpisodes : 30,
+    }));
+  }
+
+  if (typeof raw === "number") {
+    return Array.from({ length: Math.max(1, raw) }, (_, i) => ({
+      number: i + 1,
+      episodeCount: 30,
+    }));
+  }
+
+  if (Array.isArray(raw)) {
+    const seasons: SeasonInfo[] = [];
+    for (let i = 0; i < raw.length; i++) {
+      const s: any = raw[i];
+      if (typeof s === "number") {
+        seasons.push({ number: s, episodeCount: 30 });
+        continue;
+      }
+      const number = Number(
+        s?.season ?? s?.season_number ?? s?.seasonNumber ?? s?.number ?? i + 1,
+      );
+      const episodeCount = Number(
+        s?.episodes ??
+          s?.episode_count ??
+          s?.episodeCount ??
+          s?.episodes_count ??
+          s?.episodesCount ??
+          30,
+      );
+      if (Number.isFinite(number) && number > 0) {
+        seasons.push({
+          number,
+          episodeCount:
+            Number.isFinite(episodeCount) && episodeCount > 0
+              ? episodeCount
+              : 30,
+        });
+      }
     }
-    setShowControls(true);
-    controlsTimeoutRef.current = setTimeout(() => {
-      setShowControls(false);
-    }, 4000);
+    if (seasons.length > 0) {
+      const seen = new Set<number>();
+      return seasons
+        .filter((s) => {
+          if (seen.has(s.number)) return false;
+          seen.add(s.number);
+          return true;
+        })
+        .sort((a, b) => a.number - b.number);
+    }
+  }
+
+  return [{ number: 1, episodeCount: 30 }];
+}
+
+/* ---------- Page ---------- */
+
+export default function WatchPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: movieId } = use(params);
+  const { data: movie, loading: detailsLoading } = useDetailMovies(movieId);
+
+  const isSeries = !!movie?.isSeries;
+  const seasons = useMemo(() => extractSeasons(movie), [movie]);
+
+  const [season, setSeason] = useState<number>(1);
+  const [episode, setEpisode] = useState<number>(1);
+
+  /* ----- Read s/e from URL once series is known ----- */
+  useEffect(() => {
+    if (!isSeries) return;
+    const sp = new URLSearchParams(window.location.search);
+    const s = Number(sp.get("s"));
+    const e = Number(sp.get("e"));
+    if (Number.isFinite(s) && s > 0) setSeason(s);
+    if (Number.isFinite(e) && e > 0) setEpisode(e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSeries]);
+
+  /* ----- URL sync ----- */
+  const syncUrl = useCallback((s: number, e: number) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("s", String(s));
+    url.searchParams.set("e", String(e));
+    window.history.replaceState({}, "", url.toString());
   }, []);
 
-  // Handle user interactions to show controls
+  /* ----- Clamp season to valid list ----- */
   useEffect(() => {
-    const handleInteraction = () => resetControlsTimeout();
+    if (!isSeries || seasons.length === 0) return;
+    if (!seasons.some((s) => s.number === season)) {
+      setSeason(seasons[0].number);
+      setEpisode(1);
+    }
+  }, [isSeries, seasons, season]);
 
-    window.addEventListener("mousemove", handleInteraction);
-    window.addEventListener("click", handleInteraction);
-    window.addEventListener("keydown", handleInteraction);
+  /* ----- Clamp episode to season length ----- */
+  const currentSeason = seasons.find((s) => s.number === season);
+  const maxEpisodes = currentSeason?.episodeCount ?? 1;
 
-    resetControlsTimeout(); // Initial timeout
+  useEffect(() => {
+    if (!isSeries) return;
+    if (episode > maxEpisodes) setEpisode(1);
+  }, [isSeries, maxEpisodes, episode]);
 
-    return () => {
-      window.removeEventListener("mousemove", handleInteraction);
-      window.removeEventListener("click", handleInteraction);
-      window.removeEventListener("keydown", handleInteraction);
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
-    };
-  }, [resetControlsTimeout]);
+  /* ----- Embed URL ----- */
+  const embedUrl = isSeries
+    ? `${TV_PROVIDER}/${movieId}/${season}/${episode}`
+    : `${MOVIE_PROVIDER}/${movieId}`;
 
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    return `${h ? `${h}:` : ""}${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  /* ----- Fullscreen (only the player box) ----- */
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const playerWrapRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = useCallback(async () => {
+    const el = playerWrapRef.current;
+    if (!el) return;
+    try {
+      if (!document.fullscreenElement) await el.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (err) {
+      console.error("Fullscreen error:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  /* ----- Handlers ----- */
+  const handleSeasonChange = (next: number) => {
+    setSeason(next);
+    setEpisode(1);
+    syncUrl(next, 1);
   };
 
-  // Early returns after all hooks
-  if (!movie) {
-    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Movie not found</div>;
-  }
+  const handleEpisodeClick = (next: number) => {
+    if (next === episode) return;
+    setEpisode(next);
+    syncUrl(season, next);
+  };
 
-  if (error) {
+  /* ----- Guards ----- */
+  if (!movieId) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
-        <p>{error}</p>
-        <Button onClick={() => setError(null)}>Retry</Button>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Movie not found
       </div>
     );
   }
 
-  const isYouTube = movie.videoUrl.includes("youtube.com") || movie.videoUrl.includes("youtu.be");
-  const isArchive = movie.videoUrl.includes("archive.org");
-
-  // Use iframe for archive.org
-  if (isArchive) {
-    return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="relative h-screen w-full flex flex-col">
-          <iframe
-            src={movie.videoUrl}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            onMouseMove={resetControlsTimeout}
-            onClick={resetControlsTimeout}
-          />
-          <div
-            className={`absolute top-0 left-0 w-full p-4 z-10 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300 ${
-              showControls ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <div className="flex items-center gap-4">
-              <Link href={`/movies/${movie.id}`}>
-                <Button variant="ghost" size="icon" className="text-white" aria-label="Go back">
-                  <ArrowLeft className="w-6 h-6" />
-                </Button>
-              </Link>
-              <h1 className="text-xl font-medium">{movie.title}</h1>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const durationLabel = movie?.runtime ? `${movie.runtime} min` : "—";
+  const directorLabel =
+    movie?.directors?.map((d) => d.name).join(", ") ||
+    movie?.creators?.map((c) => c.name).join(", ") ||
+    "—";
+  const castLabel =
+    movie?.topCast?.slice(0, 6).map((c) => c.name).join(", ") || "—";
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="relative h-screen w-full flex flex-col">
-        <Suspense fallback={<div className="text-white text-center">Loading video...</div>}>
-          <ReactPlayer
-            ref={playerRef}
-            url={movie.videoUrl}
-            playing={isPlaying}
-            muted={isMuted}
-            width="100%"
-            height="100%"
-            config={
-              isYouTube
-                ? {
-                    youtube: {
-                      playerVars: { 
-                          controls: 0,          // Hide default controls
-                          modestbranding: 1,    // Minimal YouTube branding
-                          rel: 0,               // No related videos at the end
-                          fs: 1,                // Fullscreen button
-                          disablekb: 1,         // Disable keyboard shortcuts
-                          iv_load_policy: 3,    // Hide annotations
-                          cc_load_policy: 0,    // Don’t show captions by default
-                      },
-                    },
-                  }
-                : {}
-            }
-            onProgress={({ played, playedSeconds }) => {
-              setProgress(played * 100);
-              setCurrentTime(playedSeconds);
-            }}
-            onDuration={setDuration}
-            onError={(error) => {
-              console.error("Video playback error:", error);
-              setError(
-                isYouTube
-                  ? "Failed to load YouTube video. Please check the URL or try again."
-                  : "Failed to load video. The source may not be supported or the URL is invalid."
-              );
-            }}
-            onReady={() => console.log("Player ready:", movie.videoUrl)}
-            onMouseMove={resetControlsTimeout}
-            onClick={resetControlsTimeout}
-          />
-        </Suspense>
-
-        {/* Dedicated Pause Button for YouTube */}
-        {isYouTube && isPlaying && (
-          <div
-            className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 transition-opacity duration-300 ${
-              showControls ? "opacity-100" : "opacity-0"
-            }`}
-          >
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* ---------- Top bar ---------- */}
+      <header className="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 flex items-center gap-3">
+          <Link href={`/movies/${movieId}`}>
             <Button
               variant="ghost"
               size="icon"
-              className="bg-black/50 text-white hover:bg-black/70 w-16 h-16 rounded-full"
-              onClick={() => {
-                setIsPlaying(false);
-                resetControlsTimeout();
-              }}
-              aria-label="Pause video"
+              className="text-white hover:bg-white/10"
+              aria-label="Go back"
             >
-              <Pause className="w-8 h-8 fill-white" />
+              <ArrowLeft className="w-5 h-5" />
             </Button>
-          </div>
-        )}
+          </Link>
 
-        <div
-          className={`absolute top-0 left-0 w-full p-4 z-10 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300 ${
-            showControls ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            <Link href={`/movies/${movie.id}`}>
-              <Button variant="ghost" size="icon" className="text-white" aria-label="Go back">
-                <ArrowLeft className="w-6 h-6" />
-              </Button>
-            </Link>
-            <h1 className="text-xl font-medium">{movie.title}</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-sm md:text-base font-semibold truncate">
+              {movie?.title ?? (detailsLoading ? "Loading…" : "Now Playing")}
+            </h1>
+            {isSeries && (
+              <p className="text-xs text-gray-400 flex items-center gap-1">
+                <Tv className="w-3 h-3" />
+                Season {season} · Episode {episode}
+              </p>
+            )}
           </div>
+
+          <Link href={`/movies/${movieId}`} className="hidden sm:block">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10 gap-2"
+            >
+              <Info className="w-4 h-4" />
+              Details
+            </Button>
+          </Link>
         </div>
+      </header>
 
-        <div
-          className={`absolute bottom-0 left-0 w-full p-4 z-10 bg-gradient-to-t from-black/80 to-transparent transition-opacity duration-300 ${
-            showControls ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <div className="space-y-4">
-            <Slider
-              value={[progress]}
-              max={100}
-              step={1}
-              onValueChange={(value) => {
-                const seekTo = (value[0] / 100) * duration;
-                playerRef.current?.seekTo(seekTo, "seconds");
-                setProgress(value[0]);
-                resetControlsTimeout();
-              }}
-              className="w-full [&>span:first-child]:h-1.5 [&>span:first-child]:bg-white/30 [&_[role=slider]]:bg-red-600 [&_[role=slider]]:w-4 [&_[role=slider]]:h-4 [&_[role=slider]]:border-0 [&>span:first-child_span]:bg-red-600 [&_[role=slider]:focus-visible]:ring-0 [&_[role=slider]:focus-visible]:ring-offset-0"
-            />
+      {/* ---------- Main ---------- */}
+      <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6">
+          {/* ==== LEFT: player + selectors ==== */}
+          <section className="min-w-0">
+            {/* Player box (fullscreen target) */}
+            <div
+              ref={playerWrapRef}
+              className="relative w-full aspect-video bg-black rounded-lg overflow-hidden border border-zinc-800"
+            >
+              {detailsLoading && !movie ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-white/70" />
+                </div>
+              ) : (
+                <iframe
+                  key={embedUrl}
+                  src={embedUrl}
+                  title={
+                    movie?.title
+                      ? isSeries
+                        ? `${movie.title} S${season}E${episode}`
+                        : `Watch ${movie.title}`
+                      : "Video player"
+                  }
+                  className="absolute inset-0 w-full h-full border-0"
+                  allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  referrerPolicy="origin"
+                  loading="lazy"
+                />
+              )}
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white"
-                  onClick={() => {
-                    togglePlay();
-                    resetControlsTimeout();
-                  }}
-                  aria-label={isPlaying ? "Pause video" : "Play video"}
-                >
-                  {isPlaying ? <Pause className="w-6 h-6 fill-white" /> : <Play className="w-6 h-6 fill-white" />}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white"
-                  onClick={() => {
-                    toggleMute();
-                    resetControlsTimeout();
-                  }}
-                  aria-label={isMuted ? "Unmute video" : "Mute video"}
-                >
-                  {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                </Button>
-
-                <span className="text-sm">
-                  {formatTime(currentTime)} / {formatTime(duration)}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-white"
-                      aria-label="Settings"
-                      onClick={resetControlsTimeout}
-                    >
-                      <Settings className="w-6 h-6" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800">
-                    <DropdownMenuLabel>Quality</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-zinc-800" />
-                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white">Auto</DropdownMenuItem>
-                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white">1080p</DropdownMenuItem>
-                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white">720p</DropdownMenuItem>
-                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white">480p</DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-zinc-800" />
-                    <DropdownMenuLabel>Subtitles</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-zinc-800" />
-                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white">English</DropdownMenuItem>
-                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white">Nepali</DropdownMenuItem>
-                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white">Off</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white"
-                  onClick={() => {
-                    toggleFullscreen();
-                    resetControlsTimeout();
-                  }}
-                  aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                >
-                  {isFullscreen ? <Minimize className="w-6 h-6" /> : <Maximize className="w-6 h-6" />}
-                </Button>
-              </div>
+              <button
+                onClick={toggleFullscreen}
+                aria-label={
+                  isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                }
+                className="absolute top-3 right-3 z-10 p-2 rounded-md bg-black/60 hover:bg-black/80 text-white transition"
+              >
+                {isFullscreen ? (
+                  <Minimize className="w-5 h-5" />
+                ) : (
+                  <Maximize className="w-5 h-5" />
+                )}
+              </button>
             </div>
-          </div>
+
+            {/* ==== Season dropdown + Episode grid ==== */}
+            {isSeries && !detailsLoading && (
+              <div className="mt-4 space-y-4">
+                {/* Season dropdown */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <label
+                    htmlFor="season-select"
+                    className="text-sm text-gray-400"
+                  >
+                    Season
+                  </label>
+                  <select
+                    id="season-select"
+                    value={season}
+                    onChange={(e) =>
+                      handleSeasonChange(Number(e.target.value))
+                    }
+                    className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white text-sm rounded-md px-3 py-1.5 outline-none focus:ring-2 focus:ring-red-500/50"
+                  >
+                    {seasons.map((s) => (
+                      <option key={s.number} value={s.number}>
+                        Season {s.number}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span className="text-xs text-gray-500">
+                    {maxEpisodes} episode{maxEpisodes === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                {/* Episode buttons */}
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Episodes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: maxEpisodes }, (_, i) => i + 1).map(
+                      (n) => {
+                        const isActive = n === episode;
+                        return (
+                          <button
+                            key={n}
+                            onClick={() => handleEpisodeClick(n)}
+                            aria-current={isActive}
+                            aria-label={`Play episode ${n}`}
+                            className={`min-w-10 h-10 px-3 rounded-md text-sm font-medium transition border ${
+                              isActive
+                                ? "bg-red-600 border-red-600 text-white"
+                                : "bg-zinc-900 border-zinc-700 text-gray-200 hover:bg-zinc-800 hover:border-zinc-600"
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile-only title + short plot */}
+            {movie && (
+              <div className="mt-6 lg:hidden">
+                <h2 className="text-xl font-bold">{movie.title}</h2>
+                {movie.plot && (
+                  <p className="mt-2 text-sm text-gray-400 line-clamp-4">
+                    {movie.plot}
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ==== RIGHT: details panel ==== */}
+          <aside className="lg:sticky lg:top-20 h-fit space-y-5">
+            {movie?.image && (
+              <div className="aspect-[2/3] w-full max-w-[220px] mx-auto lg:mx-0 rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900">
+                <Image
+                  src={movie.image}
+                  alt={`${movie.title} poster`}
+                  width={300}
+                  height={450}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <div>
+              <h2 className="text-xl font-bold">
+                {movie?.title ?? "Loading…"}
+              </h2>
+              {movie?.originalTitle &&
+                movie.originalTitle !== movie.title && (
+                  <p className="text-sm text-gray-400 italic mt-1">
+                    {movie.originalTitle}
+                  </p>
+                )}
+            </div>
+
+            {movie && (
+              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300">
+                {movie.year && <span>{movie.year}</span>}
+                {movie.year && <span className="text-gray-600">•</span>}
+                <span className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" /> {durationLabel}
+                </span>
+                {movie.rating != null && (
+                  <>
+                    <span className="text-gray-600">•</span>
+                    <span className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                      {movie.rating}/10
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {movie?.genres && movie.genres.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {movie.genres.map((g) => (
+                  <Badge
+                    key={g}
+                    variant="outline"
+                    className="text-xs px-2 py-0.5 border-zinc-700 text-white"
+                  >
+                    {g}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {movie?.plot && (
+              <p className="text-sm text-gray-300 leading-relaxed line-clamp-6">
+                {movie.plot}
+              </p>
+            )}
+
+            {movie && (
+              <div className="space-y-2 text-sm">
+                <div className="flex gap-2">
+                  <span className="font-semibold text-gray-200 min-w-24">
+                    {movie.creators?.length ? "Creator:" : "Director:"}
+                  </span>
+                  <span className="text-gray-400">{directorLabel}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="font-semibold text-gray-200 min-w-24">
+                    Cast:
+                  </span>
+                  <span className="text-gray-400 line-clamp-2">
+                    {castLabel}
+                  </span>
+                </div>
+                {movie.releaseDate && (
+                  <div className="flex gap-2">
+                    <span className="font-semibold text-gray-200 min-w-24 flex items-center gap-1">
+                      <Calendar className="w-4 h-4" /> Released:
+                    </span>
+                    <span className="text-gray-400">
+                      {movie.releaseDate}
+                    </span>
+                  </div>
+                )}
+                {movie.spokenLanguages?.length > 0 && (
+                  <div className="flex gap-2">
+                    <span className="font-semibold text-gray-200 min-w-24 flex items-center gap-1">
+                      <Globe className="w-4 h-4" /> Language:
+                    </span>
+                    <span className="text-gray-400">
+                      {movie.spokenLanguages.join(", ")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 pt-2">
+              {movie?.trailer?.link && (
+                <a
+                  href={movie.trailer.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" size="sm" className="gap-2 text-black">
+                    <Film className="w-4 h-4" />
+                    Trailer
+                  </Button>
+                </a>
+              )}
+
+              <Link href={`/movies/${movieId}`}>
+                <Button variant="outline" size="sm" className="gap-2 text-black">
+                  <Info className="w-4 h-4" />
+                  Full Details
+                </Button>
+              </Link>
+
+              {movie?.link && (
+                <a
+                  href={movie.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" size="sm" className="gap-2 text-black">
+                    <ExternalLink className="w-4 h-4" />
+                    IMDb
+                  </Button>
+                </a>
+              )}
+            </div>
+          </aside>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

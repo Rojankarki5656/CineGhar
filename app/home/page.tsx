@@ -1,61 +1,111 @@
 // app/page.tsx
+"use client";
+
 import Head from "next/head";
 import { Navbar } from "@/components/navbar";
 import { HeroBanner } from "@/components/hero-banner";
 import { MovieRow } from "@/components/movie-row";
 import { Footer } from "@/components/footer";
-import { movies } from "@/lib/movies";
+import {
+  usePopularMovies,
+  usePopularTv,
+  useTopMovies,
+  useTopTv,
+  useBoxOffice,
+} from "@/hooks/chartService";
+import type { ChartMovie } from "@/hooks/chartService";
+import type { MovieCard } from "@/lib/movies";
+
+function toMovieCard(m: ChartMovie): MovieCard {
+  return {
+    id: m.imdbId ?? m.id,
+    title: m.title,
+    image: m.image ?? "/placeholder.svg",
+    year: m.year ? String(m.year) : "",
+    rating: m.rating != null ? String(m.rating) : "—",
+    genres: m.genres,
+    description: m.plot ?? undefined,
+  };
+}
 
 export default function HomePage() {
-  // Find Chiso Maanche for HeroBanner
-  const chisoMaanche = movies.find((m) => m.id === "2");
+  const { data: popularMovies, loading: pmLoading, error: pmError } =
+    usePopularMovies("US");
+  const { data: topMovies, loading: tmLoading } = useTopMovies("US");
+  const { data: popularTv, loading: ptLoading } = usePopularTv("US");
+  const { data: topTv, loading: ttLoading } = useTopTv("US");
+  const { data: boxOffice, loading: boLoading, meta: boMeta } =
+    useBoxOffice("US");
+
+  const heroMovies = [
+    ...(popularMovies ?? []).slice(0, 3),
+    ...(topMovies ?? []).slice(0, 2),
+  ].slice(0, 5);
+
+  const heroLoading = pmLoading && popularMovies.length === 0;
 
   return (
     <>
       <Head>
-  <title>CineGhar: Watch Nepali & Indian Movies Online Free | Latest HD Streaming</title>
-  <meta name="description" content="Watch trending Nepali and Indian movies, classics, and new releases online for free in HD. CineGhar is Nepal's #1 movie streaming site. No signup required!" />
-  <meta name="keywords" content="Nepali movies, Indian movies, watch online, free streaming, Nepali classics, Hindi movies, action movies, family movies, CineGhar, Nepali cinema, Nepali movie 2025, Nepali movie download, Nepali movie watch free, Nepali movie streaming, Nepali movie website, Nepali movie app, Nepali movie list, Nepali movie new release" />
-  <meta name="author" content="CineGhar Nepal" />
-  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-  <link rel="canonical" href="https://cineghar.live/home" />
+        <title>
+          CineGhar: Watch Nepali & Indian Movies Online Free | Latest HD
+          Streaming
+        </title>
+        <meta
+          name="description"
+          content="Watch trending Nepali and Indian movies, classics, and new releases online for free in HD. CineGhar is Nepal's #1 movie streaming site. No signup required!"
+        />
+        <meta
+          name="keywords"
+          content="Nepali movies, Indian movies, watch online, free streaming, Nepali classics, Hindi movies, action movies, family movies, CineGhar, Nepali cinema, Nepali movie 2025, Nepali movie download, Nepali movie watch free, Nepali movie streaming, Nepali movie website, Nepali movie app, Nepali movie list, Nepali movie new release"
+        />
+        <meta name="author" content="CineGhar Nepal" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://cineghar.live/home" />
 
-  {/* Open Graph */}
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="CineGhar" />
-  <meta property="og:url" content="https://cineghar.live/home" />
-  <meta property="og:title" content="CineGhar: Watch Nepali & Indian Movies Online Free | Latest HD Streaming" />
-  <meta property="og:description" content="Stream trending, new releases, and classic Nepali and Indian movies online for free. CineGhar is Nepal’s #1 movie streaming site." />
-  <meta property="og:image" content="https://cineghar.live/og-image.jpg" />
-  <meta property="og:image:alt" content="CineGhar - Nepali Movies Streaming" />
-  <meta property="og:locale" content="en_NP" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="CineGhar" />
+        <meta property="og:url" content="https://cineghar.live/home" />
+        <meta
+          property="og:title"
+          content="CineGhar: Watch Nepali & Indian Movies Online Free | Latest HD Streaming"
+        />
+        <meta
+          property="og:description"
+          content="Stream trending, new releases, and classic Nepali and Indian movies online for free."
+        />
+        <meta property="og:image" content="https://cineghar.live/og-image.jpg" />
+        <meta property="og:locale" content="en_NP" />
 
-  {/* Twitter */}
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@cineghar" />
-  <meta name="twitter:creator" content="@cineghar" />
-  <meta name="twitter:url" content="https://cineghar.live/home" />
-  <meta name="twitter:title" content="CineGhar: Watch Nepali & Indian Movies Online Free" />
-  <meta name="twitter:description" content="Nepali and Indian movies anytime, anywhere. CineGhar.live brings cinema online — just like Netflix for Nepal." />
-  <meta name="twitter:image" content="https://cineghar.live/og-image.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@cineghar" />
+        <meta name="twitter:creator" content="@cineghar" />
+        <meta
+          name="twitter:title"
+          content="CineGhar: Watch Nepali & Indian Movies Online Free"
+        />
+        <meta
+          name="twitter:description"
+          content="Nepali and Indian movies anytime, anywhere."
+        />
+        <meta
+          name="twitter:image"
+          content="https://cineghar.live/og-image.jpg"
+        />
 
-  {/* Favicon */}
-  <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#000000" />
 
-  {/* Mobile & Web App */}
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#000000" />
-
-  {/* Structured Data for SEO */}
-  <script type="application/ld+json">
-    {`
+        <script type="application/ld+json">
+          {`
       {
         "@context": "https://schema.org",
         "@type": "VideoStreamingService",
         "name": "CineGhar",
         "url": "https://cineghar.live/home",
         "logo": "https://cineghar.live/og-image.jpg",
-        "description": "Watch trending Nepali and Indian movies, classics, and new releases online for free in HD. CineGhar is Nepal's #1 movie streaming site.",
+        "description": "Watch trending Nepali and Indian movies online for free in HD.",
         "sameAs": [
           "https://www.facebook.com/cineghar",
           "https://twitter.com/cineghar",
@@ -63,68 +113,72 @@ export default function HomePage() {
         ]
       }
     `}
-  </script>
-</Head>
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <Navbar />
-      <main>
-        {chisoMaanche && (
+        </script>
+      </Head>
+
+      <div className="min-h-screen bg-zinc-950 text-white">
+        <Navbar />
+
+        <main>
           <HeroBanner
-            title={chisoMaanche.title}
-            description={`${chisoMaanche.description} || CHISO MANCHHE Nepali Full Movie 2025`}
-            imageUrl={chisoMaanche.imageUrl}
-            year={chisoMaanche.year}
-            duration={chisoMaanche.duration}
-            rating={chisoMaanche.rating}
+            loading={heroLoading}
+            slides={heroMovies.map((m) => ({
+              id: m.imdbId ?? m.id,
+              title: m.title,
+              description: m.plot ?? `Watch ${m.title} online on CineGhar.`,
+              imageUrl: m.image ?? "/placeholder.svg",
+              year: m.year ? String(m.year) : undefined,
+              duration: m.runtime ? `${m.runtime} min` : undefined,
+              rating: m.rating != null ? String(m.rating) : undefined,
+              badge: m.isSeries ? "TV Series" : undefined,
+            }))}
           />
-        )}
 
-        <div className="px-4 md:px-6 py-8 space-y-8">
-          <MovieRow
-            title="Trending Now"
-            movies={movies.filter((m) =>
-              ["30", "3", "4", "5", "6", "7"].includes(m.id)
+          <div className="px-4 md:px-6 py-8 space-y-10">
+            {/* Trending */}
+            <MovieRow
+              title="Trending Now"
+              movies={popularMovies.map(toMovieCard)}
+              loading={pmLoading}
+            />
+            {pmError && (
+              <p className="text-sm text-red-400 -mt-8">
+                Failed to load trending: {pmError}
+              </p>
             )}
-          />
 
-          <MovieRow
-            title="New Releases"
-            movies={movies.filter((m) =>
-              ["8", "2", "9", "10", "11", "12"].includes(m.id)
-            )}
-          />
+            <MovieRow
+              title="Top Rated Movies"
+              movies={topMovies.map(toMovieCard)}
+              loading={tmLoading}
+            />
 
-          <MovieRow
-            title="Nepali Classics"
-            movies={movies.filter((m) =>
-              ["18", "19", "20", "21", "22", "23"].includes(m.id)
-            )}
-          />
+            <MovieRow
+              title={
+                boMeta?.weekend
+                  ? `In Theaters — Weekend of ${boMeta.weekend.start_date}`
+                  : "Box Office"
+              }
+              movies={boxOffice.map(toMovieCard)}
+              loading={boLoading}
+            />
 
-          <MovieRow
-            title="Hindi Movies"
-            movies={movies.filter((m) => ["29", "31","32","33","34","35","36"].includes(m.id)
-            )}
-          />
+            <MovieRow
+              title="Popular TV Shows"
+              movies={popularTv.map(toMovieCard)}
+              loading={ptLoading}
+            />
 
-          <MovieRow
-            title="Action Movies"
-            movies={movies.filter((m) =>
-              ["30", "13", "14", "15", "16", "17"].includes(m.id)
-            )}
-          />
+            <MovieRow
+              title="Top Rated TV"
+              movies={topTv.map(toMovieCard)}
+              loading={ttLoading}
+            />
+          </div>
+        </main>
 
-          <MovieRow
-            title="Family Friendly"
-            movies={movies.filter((m) =>
-              ["24", "25", "26", "27", "28", "4"].includes(m.id)
-            )}
-          />
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+        <Footer />
+      </div>
     </>
   );
 }
