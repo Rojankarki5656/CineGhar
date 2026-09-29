@@ -1,208 +1,158 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trash2, Film, LogOut } from "lucide-react";
-import { movies } from "@/lib/movies";
+import { Trash2, LogOut } from "lucide-react";
 
-type MovieSummary = {
-  id: string | number;
+type TitleSummary = {
+  id: string;
   title: string;
   imageUrl: string;
-  year: number;
-  rating: number;
+  year: string;
+  rating: string;
 };
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+/** Fetch one title's details from the API */
+async function fetchTitle(id: string): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/title/details?title_id=${id}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data ?? json?.results ?? json;
+  } catch {
+    return null;
+  }
+}
+
+function mapSummary(item: any): TitleSummary {
+  return {
+    id: item.id,
+    title: item.title,
+    imageUrl: item.image?.link ?? "/placeholder.svg",
+    year: item.year ? String(item.year) : "",
+    rating: item.rating?.value != null ? String(item.rating.value) : "—",
+  };
+}
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState({
     name: "User",
-    email: "user@example.com",
+    email: "",
     avatar: "/images/avatar.png",
   });
-  const [viewingHistory, setViewingHistory] = useState<MovieSummary[]>([]);
-  const [watchlist, setWatchlist] = useState<MovieSummary[]>([]);
-  const [recommendations, setRecommendations] = useState<MovieSummary[]>([]);
+  const [viewingHistory, setViewingHistory] = useState<TitleSummary[]>([]);
+  const [watchlist, setWatchlist] = useState<TitleSummary[]>([]);
+  const [recommendations, setRecommendations] = useState<TitleSummary[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
 
+  /* ---------- Load all data ---------- */
   useEffect(() => {
-    const fetchUserData = async () => {
+    const load = async () => {
       const userId = localStorage.getItem("userId");
       if (!userId) {
-        setError("No user ID found. Please log in.");
-        router.push("/login");
+        router.replace("/login");
         return;
       }
 
       try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("full_name, email")
-          .eq("id", userId)
-          .single();
 
-        if (error) {
-          setError("Failed to fetch user data: " + error.message);
-          return;
-        }
-
-        if (data) {
-          setUserData({
-            name: data.full_name,
-            email: data.email,
-            avatar: userData.avatar, // Maintain default avatar or update if stored elsewhere
-          });
-        }
-      } catch (err) {
-        setError("An unexpected error occurred while fetching user data");
+      } catch (err: any) {
+        setError(err.message || "Failed to load profile data");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUserData();
-
-    // Load viewing history
-    const historyIds = JSON.parse(localStorage.getItem("viewingHistory") || "[]");
-    const history = movies
-      .filter((m) => historyIds.includes(m.id))
-      .map(({ id, title, imageUrl, year, rating }) => ({
-        id,
-        title,
-        imageUrl,
-        year: Number(year),
-        rating: Number(rating),
-      }));
-    setViewingHistory(history);
-
-    // Load watchlist
-    const watchlistIds = JSON.parse(localStorage.getItem("myList") || "[]");
-    const watchlistMovies = movies
-      .filter((m) => watchlistIds.includes(m.id))
-      .map(({ id, title, imageUrl, year, rating }) => ({
-        id,
-        title,
-        imageUrl,
-        year: Number(year),
-        rating: Number(rating),
-      }));
-    setWatchlist(watchlistMovies);
-
-    // Generate recommendations based on viewed genres
-    const viewedGenres = movies
-      .filter((m) => historyIds.includes(m.id))
-      .flatMap((m) => m.genres || []);
-    const uniqueGenres = [...new Set(viewedGenres)];
-    const recs = movies
-      .filter((m) => !historyIds.includes(m.id) && m.genres?.some((g) => uniqueGenres.includes(g)))
-      .slice(0, 5)
-      .map(({ id, title, imageUrl, year, rating }) => ({
-        id,
-        title,
-        imageUrl,
-        year: Number(year),
-        rating: Number(rating),
-      }));
-    setRecommendations(recs);
+    load();
   }, [router]);
 
+  /* ---------- Save profile ---------- */
   const handleSave = async () => {
-    const updatedUser = { ...userData };
     const userId = localStorage.getItem("userId");
-
     if (!userId) {
       setError("No user ID found. Please log in.");
       return;
     }
 
     try {
-      if (avatarFile) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          if (e.target && typeof e.target.result === "string") {
-            updatedUser.avatar = e.target.result;
-            setUserData(updatedUser);
-            setAvatarFile(null);
-          }
-        };
-        reader.readAsDataURL(avatarFile);
-      }
 
-      // Update user data in Supabase
-      const { error } = await supabase
-        .from("users")
-        .update({ full_name: updatedUser.name, email: updatedUser.email })
-        .eq("id", userId);
-
-      if (error) {
-        setError("Failed to update user data: " + error.message);
-        return;
-      }
-
-      setUserData(updatedUser);
-      setIsEditing(false);
-    } catch (err) {
-      setError("An unexpected error occurred while updating user data");
+    } catch (err: any) {
+      setError(err.message || "Failed to update user data");
     }
   };
 
+  /* ---------- Clear history ---------- */
   const clearHistory = () => {
     localStorage.setItem("viewingHistory", "[]");
     setViewingHistory([]);
     setRecommendations([]);
   };
 
-  const removeFromWatchlist = (id: string | number) => {
-    const updatedWatchlist = watchlist.filter((m) => m.id !== id);
-    localStorage.setItem("myList", JSON.stringify(updatedWatchlist.map((m) => m.id)));
-    setWatchlist(updatedWatchlist);
-  };
 
+  /* ---------- Logout ---------- */
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        setError("Failed to log out: " + error.message);
-        return;
-      }
-      localStorage.removeItem("userId");
-      localStorage.removeItem("myList");
-      localStorage.removeItem("viewingHistory");
-      router.push("/");
-    } catch (err) {
-      setError("An unexpected error occurred during logout");
+
+    } catch (err: any) {
+      setError(err.message || "Failed to log out");
     }
   };
 
+  /* ---------- Delete account ---------- */
   const deleteAccount = async () => {
-    if (confirm("Are you sure you want to delete your account? This cannot be undone.")) {
-      const userId = localStorage.getItem("userId");
-      if (!userId) {
-        setError("No user ID found. Please log in.");
-        return;
-      }
+    if (
+      !confirm(
+        "Are you sure you want to delete your account? This cannot be undone.",
+      )
+    )
+      return;
 
-      try {
-        // Note: Supabase does not provide a direct API to delete auth.users.
-        // You may need to implement a server-side function to handle this securely.
-        // For now, we'll clear local data and log out.
-        await supabase.auth.signOut();
-        localStorage.clear();
-        router.push("/");
-      } catch (err) {
-        setError("An unexpected error occurred while deleting account");
-      }
+    try {
+      router.push("/");
+    } catch (err: any) {
+      setError(err.message || "Failed to delete account");
     }
   };
+
+  /* ---------- Loading state ---------- */
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white">
+        <Navbar />
+        <main className="px-4 md:px-6 py-8">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div className="h-9 w-40 rounded bg-zinc-800 animate-pulse" />
+            <div className="h-40 rounded-lg bg-zinc-900 animate-pulse" />
+            <div className="h-40 rounded-lg bg-zinc-900 animate-pulse" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -217,7 +167,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* User Information */}
+          {/* ---------- User Information ---------- */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
               <CardTitle>User Information</CardTitle>
@@ -230,7 +180,9 @@ export default function ProfilePage() {
                     <Input
                       id="name"
                       value={userData.name}
-                      onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                      onChange={(e) =>
+                        setUserData({ ...userData, name: e.target.value })
+                      }
                       className="bg-zinc-800 border-zinc-700"
                     />
                   </div>
@@ -240,7 +192,9 @@ export default function ProfilePage() {
                       id="email"
                       type="email"
                       value={userData.email}
-                      onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                      onChange={(e) =>
+                        setUserData({ ...userData, email: e.target.value })
+                      }
                       className="bg-zinc-800 border-zinc-700"
                     />
                   </div>
@@ -250,15 +204,23 @@ export default function ProfilePage() {
                       id="avatar"
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                      onChange={(e) =>
+                        setAvatarFile(e.target.files?.[0] || null)
+                      }
                       className="bg-zinc-800 border-zinc-700"
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleSave} className="bg-red-600 hover:bg-red-700">
+                    <Button
+                      onClick={handleSave}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
                       Save
                     </Button>
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                    >
                       Cancel
                     </Button>
                   </div>
@@ -267,11 +229,15 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={userData.avatar} alt="User avatar" />
-                    <AvatarFallback>{userData.name[0]}</AvatarFallback>
+                    <AvatarFallback>
+                      {userData.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-lg font-medium">{userData.name}</p>
-                    <p className="text-gray-400">{userData.email}</p>
+                    <p className="text-gray-400">
+                      {userData.email || "—"}
+                    </p>
                     <Button
                       variant="outline"
                       className="mt-2"
@@ -285,7 +251,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Viewing History */}
+          {/* ---------- Viewing History ---------- */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Viewing History</CardTitle>
@@ -297,93 +263,57 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               {viewingHistory.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {viewingHistory.map((movie) => (
-                    <Link
-                      key={movie.id}
-                      href={`/movies/${movie.id}`}
-                      className="flex flex-col items-center"
-                    >
-                      <img
-                        src={movie.imageUrl}
-                        alt={`${movie.title} poster`}
-                        className="w-full aspect-[2/3] object-cover rounded"
-                      />
-                      <p className="text-sm mt-2 text-center">{movie.title}</p>
-                    </Link>
-                  ))}
-                </div>
+                <TitleGrid
+                  titles={viewingHistory}
+                  emptyMessage=""
+                  onRemove={undefined}
+                />
               ) : (
                 <p className="text-gray-400">No viewing history yet.</p>
               )}
             </CardContent>
           </Card>
 
-          {/* Watchlist */}
+          {/* ---------- Watchlist ---------- */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
               <CardTitle>My List</CardTitle>
             </CardHeader>
             <CardContent>
               {watchlist.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {watchlist.map((movie) => (
-                    <div key={movie.id} className="flex flex-col items-center">
-                      <Link href={`/movies/${movie.id}`} className="w-full">
-                        <img
-                          src={movie.imageUrl}
-                          alt={`${movie.title} poster`}
-                          className="w-full aspect-[2/3] object-cover rounded"
-                        />
-                        <p className="text-sm mt-2 text-center">{movie.title}</p>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="mt-1 text-red-600"
-                        onClick={() => removeFromWatchlist(movie.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                <TitleGrid
+                  titles={watchlist}
+                  emptyMessage=""
+                />
               ) : (
-                <p className="text-gray-400">Your list is empty. Add movies to watch later.</p>
+                <p className="text-gray-400">
+                  Your list is empty. Add movies to watch later.
+                </p>
               )}
             </CardContent>
           </Card>
 
-          {/* Recommendations */}
+          {/* ---------- Recommendations ---------- */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
               <CardTitle>Recommended for You</CardTitle>
             </CardHeader>
             <CardContent>
               {recommendations.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {recommendations.map((movie) => (
-                    <Link
-                      key={movie.id}
-                      href={`/movies/${movie.id}`}
-                      className="flex flex-col items-center"
-                    >
-                      <img
-                        src={movie.imageUrl}
-                        alt={`${movie.title} poster`}
-                        className="w-full aspect-[2/3] object-cover rounded"
-                      />
-                      <p className="text-sm mt-2 text-center">{movie.title}</p>
-                    </Link>
-                  ))}
-                </div>
+                <TitleGrid
+                  titles={recommendations}
+                  emptyMessage=""
+                  onRemove={undefined}
+                />
               ) : (
-                <p className="text-gray-400">Watch some movies to get recommendations!</p>
+                <p className="text-gray-400">
+                  Watch some movies to get recommendations!
+                </p>
               )}
             </CardContent>
           </Card>
 
-          {/* Account Actions */}
+          {/* ---------- Account Actions ---------- */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
               <CardTitle>Account Actions</CardTitle>
@@ -401,6 +331,53 @@ export default function ProfilePage() {
         </div>
       </main>
       <Footer />
+    </div>
+  );
+}
+
+/* ---------- Shared grid for profile sections ---------- */
+function TitleGrid({
+  titles,
+  onRemove,
+}: {
+  titles: TitleSummary[];
+  emptyMessage?: string;
+  onRemove?: (id: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {titles.map((t) => (
+        <div key={t.id} className="flex flex-col items-center">
+          <Link href={`/movies/${t.id}`} className="w-full">
+            <div className="relative aspect-[2/3] rounded overflow-hidden bg-zinc-800">
+              <Image
+                src={t.imageUrl}
+                alt={`${t.title} poster`}
+                fill
+                sizes="(max-width: 768px) 50vw, 20vw"
+                className="object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "/placeholder.svg";
+                }}
+              />
+            </div>
+            <p className="text-sm mt-2 text-center line-clamp-2">
+              {t.title}
+            </p>
+          </Link>
+          {onRemove && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-1 text-red-600 hover:text-red-500"
+              onClick={() => onRemove(t.id)}
+              aria-label={`Remove ${t.title} from list`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

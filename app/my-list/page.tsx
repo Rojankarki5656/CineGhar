@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { MovieGrid } from "@/components/movie-grid";
-import { movies } from "@/lib/movies";
+import { MovieGridSkeleton } from "@/components/movie-grid-skeleton";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type Movie = {
   id: string;
@@ -26,38 +27,15 @@ export default function MyListPage() {
     const fetchWatchlist = async () => {
       const userId = localStorage.getItem("userId");
       if (!userId) {
-        setError("Please log in to view your list.");
-        setLoading(false);
-        router.push("/login");
+        router.replace("/login");
         return;
       }
 
       try {
-        const { data, error } = await supabase
-          .from("watchlist")
-          .select("movie_id")
-          .eq("user_id", userId);
 
-        if (error) {
-          setError("Failed to fetch your list: " + error.message);
-          setLoading(false);
-          return;
-        }
-
-        const savedIds = data?.map((item) => item.movie_id) || [];
-        const saved = movies
-          .filter((m) => savedIds.includes(m.id))
-          .map(({ id, title, imageUrl, year, rating }) => ({
-            id,
-            title,
-            imageUrl,
-            year,
-            rating,
-          }));
-        setSavedMovies(saved);
-        setLoading(false);
-      } catch (err) {
-        setError("An unexpected error occurred while fetching your list");
+      } catch (err: any) {
+        setError(err.message || "Failed to load your list");
+      } finally {
         setLoading(false);
       }
     };
@@ -80,14 +58,19 @@ export default function MyListPage() {
           )}
 
           {loading ? (
-            <div className="text-center py-16">
-              <p className="text-xl text-gray-400">Loading your list...</p>
-            </div>
+            <MovieGridSkeleton count={10} />
           ) : savedMovies.length > 0 ? (
             <MovieGrid movies={savedMovies} />
           ) : (
             <div className="text-center py-16">
-              <p className="text-xl text-gray-400">Your list is empty. Add movies to watch later.</p>
+              <p className="text-xl text-gray-400 mb-4">
+                Your list is empty.
+              </p>
+              <Link href="/">
+                <Button className="bg-red-600 hover:bg-red-700">
+                  Browse Movies
+                </Button>
+              </Link>
             </div>
           )}
         </div>
