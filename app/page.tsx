@@ -1,216 +1,324 @@
-"use client";
-
-import { useState, useEffect } from "react";
+// app/page.tsx
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import Head from "next/head";
+import { ArrowRight, Film, Shield, Zap } from "lucide-react";
+import LandingHero from "@/components/landing-hero";
+import LandingGetStarted from "@/components/landing-get-started";
+
+const SITE_URL = "https://cine-ghar.vercel.app";
+const SITE_NAME = "CineGhar";
+const OG_IMAGE = `${SITE_URL}/og-image.jpg`;
+
+export const metadata: Metadata = {
+  title: {
+    default:
+      "CineGhar — Watch Nepali Movies Online Free | Latest Nepali Films",
+    template: "%s | CineGhar",
+  },
+  description:
+    "Stream the latest Nepali movies, classics, and exclusive films online for free on CineGhar. Discover HD Nepali cinema — no signup required. We do not host any files; all content is embedded from third-party providers.",
+  keywords: [
+    "Nepali movies",
+    "watch Nepali movies online",
+    "Nepali films free",
+    "Nepali movie streaming",
+    "CineGhar",
+    "Nepali cinema",
+    "latest Nepali movies",
+    "Nepali films HD",
+    "Nepali movies 2025",
+    "watch Nepali movies",
+  ],
+  authors: [{ name: "CineGhar Nepal" }],
+  creator: "CineGhar Nepal",
+  publisher: "CineGhar Nepal",
+  metadataBase: new URL(SITE_URL),
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    title: "CineGhar — Watch Nepali Movies Online Free",
+    description:
+      "Stream the best Nepali movies online for free. CineGhar is a search engine for Nepali cinema — we don't host any files, we only embed publicly available content.",
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "CineGhar — Nepali Movies Streaming",
+      },
+    ],
+    locale: "en_NP",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@cineghar",
+    creator: "@cineghar",
+    title: "CineGhar — Watch Nepali Movies Online Free",
+    description:
+      "Nepali movies anytime, anywhere. CineGhar brings Nepali cinema online.",
+    images: [OG_IMAGE],
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  themeColor: "#000000",
+  viewport: "width=device-width, initial-scale=1.0",
+};
+
+const moviePosters = [
+  "https://i.ytimg.com/vi/1WajDWLXuVU/maxresdefault.jpg",
+  "https://i.ytimg.com/vi/Vhf7rS3T_tg/maxresdefault.jpg",
+  "https://i.ytimg.com/vi/g1sML8y5yIk/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLC039maYrS3GVG791IJkxw1XGvzAg",
+];
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      description:
+        "CineGhar is a free Nepali movie discovery and streaming portal. We do not host any files — all content is embedded from third-party providers.",
+      inLanguage: "en-NP",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: OG_IMAGE,
+      },
+      sameAs: [
+        "https://www.facebook.com/cineghar",
+        "https://twitter.com/cineghar",
+        "https://www.instagram.com/cineghar",
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/#faq`,
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Does CineGhar host or store movie files?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "No. CineGhar does not host, upload, or store any video files on its servers. We only embed publicly available content from third-party providers. All trademarks and copyrights belong to their respective owners.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is CineGhar free to use?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. CineGhar is a free Nepali movie discovery platform. You can browse and stream without a subscription.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What content is available on CineGhar?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "CineGhar indexes Nepali movies, classics, and selected regional films. Our library focuses on Nepali cinema.",
+          },
+        },
+      ],
+    },
+  ],
+};
 
 export default function LandingPage() {
-  const router = useRouter();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const moviePosters = [
-    "https://i.ytimg.com/vi/1WajDWLXuVU/maxresdefault.jpg",
-    "https://i.ytimg.com/vi/Vhf7rS3T_tg/maxresdefault.jpg",
-    "https://i.ytimg.com/vi/g1sML8y5yIk/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLC039maYrS3GVG791IJkxw1XGvzAg",
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % moviePosters.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [moviePosters.length]);
-
-  const handleGetStarted = () => {
-    router.push("/home");
-  };
-
   return (
     <>
-      <Head>
-        {/* Primary Meta Tags */}
-        <title>CineGhar: Watch Nepali Movies Online Free | Latest Nepali Films Streaming</title>
-        <meta
-          name="description"
-          content="Watch the latest Nepali movies, classics, and exclusive films online for free at CineGhar. Stream HD Nepali cinema, TV shows, and more—anytime, anywhere. No signup required!" />
-        <meta
-          name="keywords"
-          content="Nepali movies, watch Nepali movies online, free Nepali films, Nepali movie streaming, CineGhar, Nepali cinema, latest Nepali movies, Nepali TV shows, Nepali film classics, Nepali Netflix, Nepali movies HD, Nepali movies 2025, Nepali movies download, Nepali movies watch free, Nepali movies online, Nepali movies streaming, Nepali movies website, Nepali movies app, Nepali movies list, Nepali movies new release" />
-        <meta name="author" content="CineGhar Nepal" />
-        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        <link rel="canonical" href="https://cine-ghar.vercel.app/" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
 
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="CineGhar" />
-        <meta property="og:url" content="https://cine-ghar.vercel.app/" />
-        <meta property="og:title" content="CineGhar: Watch Nepali Movies Online Free | Latest Nepali Films Streaming" />
-        <meta
-          property="og:description"
-          content="Stream the best Nepali movies and TV shows online for free. CineGhar is Nepal’s #1 movie streaming site for new releases, classics, and exclusive content." />
-        <meta property="og:image" content="https://cine-ghar.vercel.app/og-image.jpg" />
-        <meta property="og:image:alt" content="CineGhar - Nepali Movies Streaming" />
-        <meta property="og:locale" content="en_NP" />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@cineghar" />
-        <meta name="twitter:creator" content="@cineghar" />
-        <meta name="twitter:url" content="https://cine-ghar.vercel.app/" />
-        <meta name="twitter:title" content="CineGhar: Watch Nepali Movies Online Free" />
-        <meta
-          name="twitter:description"
-          content="Nepali movies anytime, anywhere. CineGhar.live brings Nepali cinema online — just like Netflix for Nepal." />
-        <meta name="twitter:image" content="https://cine-ghar.vercel.app/og-image.jpg" />
-
-        {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" />
-
-        {/* Mobile & Web App */}
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="theme-color" content="#000000" />
-
-        {/* Structured Data for SEO */}
-        <script type="application/ld+json">
-          {`
-            {
-              "@context": "https://schema.org",
-              "@type": "VideoStreamingService",
-              "name": "CineGhar",
-              "url": "https://cine-ghar.vercel.app/",
-              "logo": "https://cine-ghar.vercel.app/og-image.jpg",
-              "description": "Watch the latest Nepali movies, classics, and exclusive films online for free at CineGhar. Stream HD Nepali cinema, TV shows, and more—anytime, anywhere.",
-              "sameAs": [
-                "https://www.facebook.com/cineghar",
-                "https://twitter.com/cineghar",
-                "https://www.instagram.com/cineghar"
-              ]
-            }
-          `}
-        </script>
-      </Head>
       <div className="min-h-screen bg-black text-white font-sans">
-        {/* Hero Section */}
-        <div className="relative h-screen">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black z-10" />
-          <div className="absolute inset-0">
-            {moviePosters.map((poster, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${index === currentImageIndex ? "opacity-100" : "opacity-0"}`}
-                style={{ backgroundImage: `url(${poster})` }} />
-            ))}
-          </div>
+        {/* ==== HERO ==== */}
+        <LandingHero posters={moviePosters} />
 
-          <header className="relative z-20 flex items-center justify-between p-4 md:p-6">
-            <div className="flex items-center">
-              <Link href="/">
-                <h1 className="text-2xl md:text-3xl font-bold text-red-600 transition-transform hover:scale-105">
-                  CineGhar
-                </h1>
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  className="text-white hover:text-white hover:bg-red-600/30 transition-all duration-300 text-lg"
-                >
-                  Sign In
-                </Button>
-              </Link>
-            </div>
-          </header>
-
-          <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4 md:px-6 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
-              Unlimited Nepali Movies, TV Shows, and More
-            </h2>
-            <p className="text-xl md:text-2xl mb-8 text-gray-200 max-w-3xl">
-              Discover the best of Nepali entertainment. Watch anywhere, anytime.
-            </p>
-            <p className="text-lg md:text-xl mb-10 text-gray-300 max-w-2xl">
-              Ready to dive in? Join CineGhar today and start streaming.
-            </p>
-            <Button
-              onClick={handleGetStarted}
-              className="bg-red-600 hover:bg-red-700 text-white px-10 py-6 text-lg md:text-xl rounded-md flex items-center gap-2 transition-all duration-300 hover:scale-105"
+        {/* ==== FEATURES ==== */}
+        <section
+          aria-labelledby="features-heading"
+          className="py-20 px-4 md:px-6 bg-black"
+        >
+          <div className="max-w-6xl mx-auto">
+            <h2
+              id="features-heading"
+              className="text-3xl md:text-4xl font-bold text-center mb-14"
             >
-              Get Started <ArrowRight className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
+              Why CineGhar
+            </h2>
 
-        {/* Feature Section 1: Enjoy on Your TV */}
-        <section className="py-20 px-4 md:px-6 bg-black">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center gap-12 md:gap-16 animate-slide-up">
-              <div className="flex-1">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-                  Stream on Any TV
-                </h2>
-                <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-                  Enjoy CineGhar on Smart TVs, PlayStation, Xbox, Chromecast, Apple TV, Blu-ray players, and more.
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <article className="bg-zinc-900 rounded-lg p-6 border border-zinc-800 hover:border-zinc-700 transition">
+                <Film className="w-10 h-10 text-red-500 mb-4" />
+                <h3 className="text-xl font-semibold mb-3">
+                  A Curated Nepali Library
+                </h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Browse a growing collection of Nepali films — from classics
+                  to recent releases — all in one place.
                 </p>
-              </div>
-              <div className="flex-1">
-                <div className="relative">
-                  <img
-                    src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Smart TV streaming CineGhar"
-                    className="rounded-lg shadow-2xl w-full h-auto transition-transform hover:scale-105 duration-300" />
-                </div>
-              </div>
+              </article>
+
+              <article className="bg-zinc-900 rounded-lg p-6 border border-zinc-800 hover:border-zinc-700 transition">
+                <Zap className="w-10 h-10 text-red-500 mb-4" />
+                <h3 className="text-xl font-semibold mb-3">
+                  Fast &amp; Simple
+                </h3>
+                <p className="text-gray-400 leading-relaxed">
+                  No signup, no clutter. Search, click, and start watching in
+                  seconds on any modern browser.
+                </p>
+              </article>
+
+              <article className="bg-zinc-900 rounded-lg p-6 border border-zinc-800 hover:border-zinc-700 transition">
+                <Shield className="w-10 h-10 text-red-500 mb-4" />
+                <h3 className="text-xl font-semibold mb-3">
+                  We Don&apos;t Host Files
+                </h3>
+                <p className="text-gray-400 leading-relaxed">
+                  CineGhar is an index — we embed content from third-party
+                  providers. We never upload, store, or distribute files.
+                </p>
+              </article>
             </div>
           </div>
         </section>
 
-        {/* Feature Section 2: Offline Viewing */}
-        <section className="py-20 px-4 md:px-6 bg-zinc-900">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row-reverse items-center gap-12 md:gap-16 animate-slide-up">
-              <div className="flex-1">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-                  Watch Offline Anytime
-                </h2>
-                <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-                  Download your favorite Nepali movies and shows to enjoy on the go, no internet required.
+        {/* ==== HOW IT WORKS ==== */}
+        <section
+          aria-labelledby="how-heading"
+          className="py-20 px-4 md:px-6 bg-zinc-900"
+        >
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 id="how-heading" className="text-3xl md:text-4xl font-bold mb-6">
+              How It Works
+            </h2>
+            <p className="text-lg md:text-xl text-gray-300 leading-relaxed mb-10">
+              CineGhar is a discovery layer for Nepali cinema. You browse our
+              curated index, and playback is handled by third-party embedding
+              services. No files are stored on our servers.
+            </p>
+
+            <ol className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+              <li className="bg-black rounded-lg p-6 border border-zinc-800">
+                <span className="text-red-500 text-3xl font-bold">01</span>
+                <h3 className="text-lg font-semibold mt-3 mb-2">Browse</h3>
+                <p className="text-gray-400 text-sm">
+                  Explore Nepali movies by genre, year, or popularity.
                 </p>
-              </div>
-              <div className="flex-1">
-                <div className="relative">
-                  <img
-                    src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Mobile device downloading CineGhar content"
-                    className="rounded-lg shadow-2xl w-full h-auto transition-transform hover:scale-105 duration-300" />
-                </div>
-              </div>
-            </div>
+              </li>
+              <li className="bg-black rounded-lg p-6 border border-zinc-800">
+                <span className="text-red-500 text-3xl font-bold">02</span>
+                <h3 className="text-lg font-semibold mt-3 mb-2">Choose</h3>
+                <p className="text-gray-400 text-sm">
+                  Pick a title and select your preferred streaming server.
+                </p>
+              </li>
+              <li className="bg-black rounded-lg p-6 border border-zinc-800">
+                <span className="text-red-500 text-3xl font-bold">03</span>
+                <h3 className="text-lg font-semibold mt-3 mb-2">Watch</h3>
+                <p className="text-gray-400 text-sm">
+                  Playback runs through third-party embeds — no downloads, no
+                  storage.
+                </p>
+              </li>
+            </ol>
           </div>
         </section>
 
-        {/* Call-to-Action Section */}
-        <section className="py-20 px-4 md:px-6 bg-black border-t border-zinc-800">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Join CineGhar Today
+        {/* ==== CTA ==== */}
+        <section
+          aria-labelledby="cta-heading"
+          className="py-20 px-4 md:px-6 bg-black border-t border-zinc-800"
+        >
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 id="cta-heading" className="text-3xl md:text-4xl font-bold mb-6">
+              Start Watching Nepali Movies
             </h2>
             <p className="text-lg md:text-xl text-gray-300 mb-10">
-              Start streaming the best Nepali entertainment with a subscription that fits your needs.
+              Dive into the best of Nepali cinema — free, fast, and simple.
             </p>
-            <Button
-              onClick={handleGetStarted}
-              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-lg rounded-md transition-all duration-300 hover:scale-105"
-            >
-              Start Watching Now
-            </Button>
+            <LandingGetStarted />
           </div>
         </section>
 
-        {/* Footer */}
+        {/* ==== DISCLAIMER ==== */}
+        <section
+          aria-labelledby="disclaimer-heading"
+          className="py-12 px-4 md:px-6 bg-zinc-950 border-t border-zinc-800"
+        >
+          <div className="max-w-4xl mx-auto">
+            <h2
+              id="disclaimer-heading"
+              className="text-lg font-semibold text-gray-200 mb-4"
+            >
+              Disclaimer
+            </h2>
+            <div className="space-y-3 text-sm text-gray-400 leading-relaxed">
+              <p>
+                <strong className="text-gray-300">
+                  CineGhar does not host, upload, store, or distribute any
+                  video files on its servers.
+                </strong>{" "}
+                We are an index and discovery platform. All media content is
+                embedded from publicly available third-party providers that
+                are not affiliated with CineGhar.
+              </p>
+              <p>
+                We do not take responsibility for the content hosted on
+                third-party sites. All trademarks, logos, and copyrights are
+                the property of their respective owners.
+              </p>
+              <p>
+                If you are a rights holder and believe content accessible
+                through CineGhar infringes your copyright, please review our{" "}
+                <Link
+                  href="/dmca"
+                  className="text-red-500 hover:underline"
+                >
+                  DMCA policy
+                </Link>{" "}
+                and contact us. We respond promptly to valid takedown requests.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ==== FOOTER ==== */}
         <footer className="py-12 px-4 md:px-6 bg-black text-gray-400 border-t border-zinc-800">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
@@ -221,12 +329,19 @@ export default function LandingPage() {
               </Link>
               <p className="text-gray-400">
                 Questions?{" "}
-                <Link href="/contact" className="hover:underline text-gray-300">
+                <Link
+                  href="/contact"
+                  className="hover:underline text-gray-300"
+                >
                   Contact us
                 </Link>
               </p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+
+            <nav
+              aria-label="Footer"
+              className="grid grid-cols-2 md:grid-cols-4 gap-8"
+            >
               <div>
                 <ul className="space-y-3">
                   <li>
@@ -235,18 +350,27 @@ export default function LandingPage() {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/investor-relations" className="hover:underline text-gray-300">
-                      Investor Relations
+                    <Link
+                      href="/dmca"
+                      className="hover:underline text-gray-300"
+                    >
+                      DMCA
                     </Link>
                   </li>
                   <li>
-                    <Link href="/privacy" className="hover:underline text-gray-300">
+                    <Link
+                      href="/privacy"
+                      className="hover:underline text-gray-300"
+                    >
                       Privacy
                     </Link>
                   </li>
                   <li>
-                    <Link href="/speed-test" className="hover:underline text-gray-300">
-                      Speed Test
+                    <Link
+                      href="/terms"
+                      className="hover:underline text-gray-300"
+                    >
+                      Terms of Use
                     </Link>
                   </li>
                 </ul>
@@ -254,23 +378,35 @@ export default function LandingPage() {
               <div>
                 <ul className="space-y-3">
                   <li>
-                    <Link href="/help-center" className="hover:underline text-gray-300">
+                    <Link
+                      href="/disclaimer"
+                      className="hover:underline text-gray-300"
+                    >
+                      Disclaimer
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/help-center"
+                      className="hover:underline text-gray-300"
+                    >
                       Help Center
                     </Link>
                   </li>
                   <li>
-                    <Link href="/jobs" className="hover:underline text-gray-300">
-                      Jobs
+                    <Link
+                      href="/contact"
+                      className="hover:underline text-gray-300"
+                    >
+                      Contact Us
                     </Link>
                   </li>
                   <li>
-                    <Link href="/cookie-preferences" className="hover:underline text-gray-300">
-                      Cookie Preferences
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/legal-notices" className="hover:underline text-gray-300">
-                      Legal Notices
+                    <Link
+                      href="/about"
+                      className="hover:underline text-gray-300"
+                    >
+                      About
                     </Link>
                   </li>
                 </ul>
@@ -278,49 +414,67 @@ export default function LandingPage() {
               <div>
                 <ul className="space-y-3">
                   <li>
-                    <Link href="/account" className="hover:underline text-gray-300">
+                    <Link
+                      href="/movies"
+                      className="hover:underline text-gray-300"
+                    >
+                      Movies
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/categories"
+                      className="hover:underline text-gray-300"
+                    >
+                      Categories
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/my-list"
+                      className="hover:underline text-gray-300"
+                    >
+                      My List
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <ul className="space-y-3">
+                  <li>
+                    <Link
+                      href="/account"
+                      className="hover:underline text-gray-300"
+                    >
                       Account
                     </Link>
                   </li>
                   <li>
-                    <Link href="/ways-to-watch" className="hover:underline text-gray-300">
-                      Ways to Watch
+                    <Link
+                      href="/login"
+                      className="hover:underline text-gray-300"
+                    >
+                      Sign In
                     </Link>
                   </li>
                   <li>
-                    <Link href="/corporate-info" className="hover:underline text-gray-300">
-                      Corporate Information
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/exclusives" className="hover:underline text-gray-300">
-                      Only on CineGhar
+                    <Link
+                      href="/signup"
+                      className="hover:underline text-gray-300"
+                    >
+                      Sign Up
                     </Link>
                   </li>
                 </ul>
               </div>
-              <div>
-                <ul className="space-y-3">
-                  <li>
-                    <Link href="/media-center" className="hover:underline text-gray-300">
-                      Media Center
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/terms" className="hover:underline text-gray-300">
-                      Terms of Use
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/contact" className="hover:underline text-gray-300">
-                      Contact Us
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
+            </nav>
+
             <div className="mt-10 text-sm text-gray-500">
               <p>© 2025 CineGhar Nepal. All rights reserved.</p>
+              <p className="mt-2 text-xs">
+                CineGhar does not host any files. All content is provided by
+                non-affiliated third parties.
+              </p>
             </div>
           </div>
         </footer>
