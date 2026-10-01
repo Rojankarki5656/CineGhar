@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ["latin"] });
 const baseUrl = "https://cine-ghar.vercel.app"; // 🔁 Update with your actual domain
 
 export const metadata: Metadata = {
+  verification: {
+    google: "fv_nd_FIzRDO8hXp_zZYYmJsblAmFsBbkoxSWzkW0BQ",
+  },
   title: {
     default: "Cine Ghar – Watch Nepali & Indian Movies Online",
     template: "%s | Cine Ghar",
