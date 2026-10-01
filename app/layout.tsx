@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,14 +15,15 @@ export const metadata: Metadata = {
     default: "Cine Ghar – Watch Nepali & Indian Movies Online",
     template: "%s | Cine Ghar",
   },
-  description: "Stream Nepali and Indian movies online in HD. Watch latest films, dramas, and web series on Cine Ghar – your ultimate movie hub.",
+  description:
+    "Stream Nepali and Indian movies online in HD. Watch latest films, dramas, and web series on Cine Ghar – your ultimate movie hub.",
   keywords: [
-    "Nepali movies", 
-    "Indian movies", 
-    "Cine Ghar", 
-    "Watch movies online", 
-    "Free Nepali films", 
-    "HD movies", 
+    "Nepali movies",
+    "Indian movies",
+    "Cine Ghar",
+    "Watch movies online",
+    "Free Nepali films",
+    "HD movies",
     "Movie streaming Nepal",
     "Online cinema",
     "Nepali cinema",
@@ -94,7 +96,8 @@ export const metadata: Metadata = {
     url: baseUrl,
     siteName: "FilmySansar",
     title: "FilmySansar – Watch Nepali & Indian Movies Online",
-    description: "Stream Nepali and Indian movies online in HD. Watch latest films, dramas, and web series on FilmySansar.",
+    description:
+      "Stream Nepali and Indian movies online in HD. Watch latest films, dramas, and web series on FilmySansar.",
     images: [
       {
         url: `${baseUrl}/favicon.jpg`, // ✅ Use your real OG image
@@ -116,9 +119,9 @@ export const metadata: Metadata = {
     canonical: baseUrl,
   },
   other: {
-    "rating": "general",
+    rating: "general",
     "revisit-after": "7 days",
-    "distribution": "global",
+    distribution: "global",
   },
 };
 
@@ -165,6 +168,7 @@ export default function RootLayout({
         </ThemeProvider>
         <Analytics />
       </body>
+      <GoogleAnalytics gaId="G-DBX80G890F" />
     </html>
   );
 }
