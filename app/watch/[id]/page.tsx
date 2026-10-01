@@ -443,6 +443,7 @@ export default function WatchPage({
                   alt={`${movie.title} poster`}
                   width={300}
                   height={450}
+                  unoptimized
                   className="w-full h-full object-cover"
                 />
               </div>

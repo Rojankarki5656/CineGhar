@@ -41,17 +41,17 @@ export default function LandingPage() {
           content="Nepali movies, watch Nepali movies online, free Nepali films, Nepali movie streaming, CineGhar, Nepali cinema, latest Nepali movies, Nepali TV shows, Nepali film classics, Nepali Netflix, Nepali movies HD, Nepali movies 2025, Nepali movies download, Nepali movies watch free, Nepali movies online, Nepali movies streaming, Nepali movies website, Nepali movies app, Nepali movies list, Nepali movies new release" />
         <meta name="author" content="CineGhar Nepal" />
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        <link rel="canonical" href="https://cineghar.live/" />
+        <link rel="canonical" href="https://cine-ghar.vercel.app/" />
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="CineGhar" />
-        <meta property="og:url" content="https://cineghar.live/" />
+        <meta property="og:url" content="https://cine-ghar.vercel.app/" />
         <meta property="og:title" content="CineGhar: Watch Nepali Movies Online Free | Latest Nepali Films Streaming" />
         <meta
           property="og:description"
           content="Stream the best Nepali movies and TV shows online for free. CineGhar is Nepal’s #1 movie streaming site for new releases, classics, and exclusive content." />
-        <meta property="og:image" content="https://cineghar.live/og-image.jpg" />
+        <meta property="og:image" content="https://cine-ghar.vercel.app/og-image.jpg" />
         <meta property="og:image:alt" content="CineGhar - Nepali Movies Streaming" />
         <meta property="og:locale" content="en_NP" />
 
@@ -59,12 +59,12 @@ export default function LandingPage() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@cineghar" />
         <meta name="twitter:creator" content="@cineghar" />
-        <meta name="twitter:url" content="https://cineghar.live/" />
+        <meta name="twitter:url" content="https://cine-ghar.vercel.app/" />
         <meta name="twitter:title" content="CineGhar: Watch Nepali Movies Online Free" />
         <meta
           name="twitter:description"
           content="Nepali movies anytime, anywhere. CineGhar.live brings Nepali cinema online — just like Netflix for Nepal." />
-        <meta name="twitter:image" content="https://cineghar.live/og-image.jpg" />
+        <meta name="twitter:image" content="https://cine-ghar.vercel.app/og-image.jpg" />
 
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
@@ -80,8 +80,8 @@ export default function LandingPage() {
               "@context": "https://schema.org",
               "@type": "VideoStreamingService",
               "name": "CineGhar",
-              "url": "https://cineghar.live/",
-              "logo": "https://cineghar.live/og-image.jpg",
+              "url": "https://cine-ghar.vercel.app/",
+              "logo": "https://cine-ghar.vercel.app/og-image.jpg",
               "description": "Watch the latest Nepali movies, classics, and exclusive films online for free at CineGhar. Stream HD Nepali cinema, TV shows, and more—anytime, anywhere.",
               "sameAs": [
                 "https://www.facebook.com/cineghar",

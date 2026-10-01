@@ -116,6 +116,7 @@ export function MovieRow({
                     alt={`${movie.title} poster`}
                     width={200}
                     height={300}
+                    unoptimized
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder.svg";

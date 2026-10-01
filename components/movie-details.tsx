@@ -100,6 +100,7 @@ export default function MovieDetailsPage({ movie }: { movie: MovieDetail }) {
                 alt={`${movie.title} banner`}
                 fill
                 className="object-cover"
+                unoptimized
                 priority
               />
             )}
@@ -123,6 +124,7 @@ export default function MovieDetailsPage({ movie }: { movie: MovieDetail }) {
                       alt={`${movie.title} poster`}
                       width={300}
                       height={450}
+                      unoptimized
                       className="w-full h-full object-cover"
                     />
                   )}
@@ -389,6 +391,7 @@ export default function MovieDetailsPage({ movie }: { movie: MovieDetail }) {
                         alt={person.name}
                         width={120}
                         height={120}
+                        unoptimized
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                     ) : (
@@ -461,6 +464,7 @@ export default function MovieDetailsPage({ movie }: { movie: MovieDetail }) {
                   <Image
                     src={movie.trailer.thumbnail}
                     alt={movie.trailer.title ?? `Trailer for ${movie.title}`}
+                    unoptimized
                     fill
                     className="object-cover"
                   />

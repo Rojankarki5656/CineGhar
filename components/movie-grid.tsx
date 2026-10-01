@@ -1,27 +1,42 @@
-import Link from "next/link"
-import { Star } from "lucide-react"
+import Link from "next/link";
+import { Star } from "lucide-react";
+import Image from "next/image";
 
 interface Movie {
-  id: string
-  title: string
-  imageUrl: string
-  year: string
-  rating: string
+  id: string;
+  title: string;
+  imageUrl: string;
+  year: string;
+  rating: string;
 }
 
 interface MovieGridProps {
-  movies: Movie[]
+  movies: Movie[];
 }
 
 export function MovieGrid({ movies }: MovieGridProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
       {movies.map((movie) => (
-        <Link key={movie.id} href={`/movies/${movie.id}`} className="transition-transform duration-300 hover:scale-105">
+        <Link
+          key={movie.id}
+          href={`/movies/${movie.id}`}
+          className="transition-transform duration-300 hover:scale-105"
+        >
           <div className="relative aspect-[2/3] rounded-md overflow-hidden">
-            <img src={movie.imageUrl || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
+            import Image from "next/image";
+            <Image
+              src={movie.imageUrl || "/placeholder.svg"}
+              alt={movie.title}
+              fill
+              unoptimized
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+              className="object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-              <h3 className="font-medium text-sm line-clamp-1">{movie.title}</h3>
+              <h3 className="font-medium text-sm line-clamp-1">
+                {movie.title}
+              </h3>
               <div className="flex items-center justify-between text-xs text-gray-300 mt-1">
                 <span>{movie.year}</span>
                 <span className="flex items-center">
@@ -34,5 +49,5 @@ export function MovieGrid({ movies }: MovieGridProps) {
         </Link>
       ))}
     </div>
-  )
+  );
 }

@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 // Base site URL
-const baseUrl = "https://cineghar.live"; // 🔁 Update with your actual domain
+const baseUrl = "https://cine-ghar.vercel.app"; // 🔁 Update with your actual domain
 
 export const metadata: Metadata = {
   title: {

@@ -61,11 +61,11 @@ export default function HomePage() {
         />
         <meta name="author" content="CineGhar Nepal" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://cineghar.live/home" />
+        <link rel="canonical" href="https://cine-ghar.vercel.app/home" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="CineGhar" />
-        <meta property="og:url" content="https://cineghar.live/home" />
+        <meta property="og:url" content="https://cine-ghar.vercel.app/home" />
         <meta
           property="og:title"
           content="CineGhar: Watch Nepali & Indian Movies Online Free | Latest HD Streaming"
@@ -74,7 +74,7 @@ export default function HomePage() {
           property="og:description"
           content="Stream trending, new releases, and classic Nepali and Indian movies online for free."
         />
-        <meta property="og:image" content="https://cineghar.live/og-image.jpg" />
+        <meta property="og:image" content="https://cine-ghar.vercel.app/og-image.jpg" />
         <meta property="og:locale" content="en_NP" />
 
         <meta name="twitter:card" content="summary_large_image" />
@@ -90,7 +90,7 @@ export default function HomePage() {
         />
         <meta
           name="twitter:image"
-          content="https://cineghar.live/og-image.jpg"
+          content="https://cine-ghar.vercel.app/og-image.jpg"
         />
 
         <link rel="icon" href="/favicon.ico" />
@@ -103,8 +103,8 @@ export default function HomePage() {
         "@context": "https://schema.org",
         "@type": "VideoStreamingService",
         "name": "CineGhar",
-        "url": "https://cineghar.live/home",
-        "logo": "https://cineghar.live/og-image.jpg",
+        "url": "https://cine-ghar.vercel.app/home",
+        "logo": "https://cine-ghar.vercel.app/og-image.jpg",
         "description": "Watch trending Nepali and Indian movies online for free in HD.",
         "sameAs": [
           "https://www.facebook.com/cineghar",
