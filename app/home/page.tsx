@@ -16,6 +16,7 @@ import {
 import type { ChartMovie } from "@/hooks/chartService";
 import type { MovieCard } from "@/lib/movies";
 import { browseChart } from "@/lib/browse-urls";
+import { ContinueWatchingRow } from "@/components/continue-watching-row";
 
 function toMovieCard(m: ChartMovie): MovieCard {
   return {
@@ -151,6 +152,9 @@ export default function HomePage() {
           />
 
           <div className="px-4 md:px-6 py-8 space-y-10">
+
+
+            <ContinueWatchingRow />
             {/* Trending = popular-movies (chart cap: 100) */}
             <MovieRow
               title="Trending Now"

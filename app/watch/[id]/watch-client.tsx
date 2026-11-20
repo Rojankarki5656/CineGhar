@@ -23,6 +23,7 @@ import { Navbar } from "@/components/navbar";
 import { extractSeasons } from "@/lib/seasons";
 import { useEpisodes } from "@/hooks/episodesService";
 import { EpisodeSelector } from "@/components/watch/EpisodeSelector";
+import { useWatchProgress } from "@/hooks/useWatchProgress";
 
 interface WatchMovie {
   id: string;
@@ -78,7 +79,12 @@ export default function WatchClient({
       if (apiEpisodes.length > 0) return apiEpisodes.length;
     }
     return currentSeason?.episodeCount ?? 1;
-  }, [isSeries, episodesLoading, apiEpisodes.length, currentSeason?.episodeCount]);
+  }, [
+    isSeries,
+    episodesLoading,
+    apiEpisodes.length,
+    currentSeason?.episodeCount,
+  ]);
 
   // Seed season/episode from the URL
   useEffect(() => {
@@ -149,6 +155,21 @@ export default function WatchClient({
       </div>
     );
   }
+
+  useWatchProgress({
+    titleId: movieId,
+    title: movie?.title,
+    imageUrl:
+      typeof movie?.image === "string"
+        ? movie.image
+        : ((movie as any)?.image?.link as string | undefined),
+    year: movie?.year,
+    isSeries,
+    season,
+    episode,
+    episodeTitle: selectedEpisode?.title,
+    enabled: !detailsLoading && !!movie,
+  });
 
   return (
     <div className="min-h-screen bg-[#141414] text-white">
