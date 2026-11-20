@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import config from "@/config/config"
 
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = config.localUrl;
 
 /* ---------- Helpers ---------- */
 
@@ -111,11 +112,11 @@ function mapCelebrity(item: any): ChartCelebrity {
     professions: item.professions ?? [],
     knownFor: item.known_for
       ? {
-          id: item.known_for.id,
-          title: item.known_for.title,
-          link: item.known_for.link,
-          year: item.known_for.year ?? null,
-        }
+        id: item.known_for.id,
+        title: item.known_for.title,
+        link: item.known_for.link,
+        year: item.known_for.year ?? null,
+      }
       : null,
     image: item.image?.link ?? null,
     imageWidth: item.image?.width ?? null,
@@ -125,8 +126,8 @@ function mapCelebrity(item: any): ChartCelebrity {
 
 /* ---------- Generic chart hook factory ---------- */
 
-function createChartHook<T>(endpoint: string, mapper: (item: any) => T) {
-  return function useChart(country?: string) {
+function createChartHook<T>(endpoint: string, mapper: (item: any) => T, defaultLimit?: number) {
+  return function useChart(country?: string, limit = defaultLimit) {
     const [data, setData] = useState<T[]>([]);
     const [meta, setMeta] = useState<ChartMeta | null>(null);
     const [loading, setLoading] = useState(true);
@@ -141,6 +142,10 @@ function createChartHook<T>(endpoint: string, mapper: (item: any) => T) {
           setError(null);
 
           const url = new URL(`${API_BASE_URL}${endpoint}`);
+          if (limit !== undefined) {
+            url.searchParams.set("limit", limit.toString());
+          }
+          
           if (country) url.searchParams.set("country", country);
 
           const res = await fetch(url.toString(), {
@@ -185,29 +190,35 @@ function createChartHook<T>(endpoint: string, mapper: (item: any) => T) {
 export const usePopularMovies = createChartHook<ChartMovie>(
   "/charts/popular-movies",
   mapMovie,
+  7,
 );
 
 export const usePopularTv = createChartHook<ChartMovie>(
   "/charts/popular-tv",
   mapMovie,
+  10
 );
 
 export const useTopMovies = createChartHook<ChartMovie>(
   "/charts/top-movies",
   mapMovie,
+  10
 );
 
 export const useTopTv = createChartHook<ChartMovie>(
   "/charts/top-tv",
   mapMovie,
+  10
 );
 
 export const useBoxOffice = createChartHook<ChartMovie>(
   "/charts/box-office",
   mapMovie,
+  10
 );
 
 export const usePopularCelebrities = createChartHook<ChartCelebrity>(
   "/charts/popular-celebrities",
   mapCelebrity,
+  10
 );

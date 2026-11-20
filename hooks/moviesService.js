@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import config from "../config/config";
 
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = config.localUrl;
 
 /**
  * Extracts the IMDb ID from a URL like:

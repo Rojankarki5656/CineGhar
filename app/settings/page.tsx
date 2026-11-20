@@ -138,7 +138,7 @@ export default function SettingsPage() {
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800">
                     <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="Nepali">Nepali</SelectItem>
+                    <SelectItem value=""></SelectItem>
                   </SelectContent>
                 </Select>
               </div>

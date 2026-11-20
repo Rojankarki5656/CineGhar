@@ -1,7 +1,8 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import axios from "axios";
+import config from "../config/config"
 
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = config.localUrl;
 
 const fetchData = async (url) => {
   try {

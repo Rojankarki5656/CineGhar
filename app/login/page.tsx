@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Lock, Mail } from "lucide-react"
+import { supabase } from "@/utils/supabase/client"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -16,13 +17,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)
 
-    // Validation
     if (!email.trim()) {
       setError("Email is required")
       setLoading(false)
@@ -36,9 +35,27 @@ export default function LoginPage() {
     }
 
     try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
 
+      if (error) throw error
+
+      if (!data.user) {
+        throw new Error("Unable to sign in. Please verify your email first.")
+      }
+
+      // Persist user id for legacy pages that still rely on localStorage
+      localStorage.setItem("userId", data.user.id)
+
+      router.push("/home")
+      router.refresh()
     } catch (err) {
-      setError("An unexpected error occurred")
+      const message =
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      setError(message)
+    } finally {
       setLoading(false)
     }
   }
@@ -76,6 +93,7 @@ export default function LoginPage() {
                     className="pl-10 bg-zinc-800 border-zinc-700 text-white"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                   />
                 </div>
               </div>
@@ -98,6 +116,7 @@ export default function LoginPage() {
                     className="pl-10 pr-10 bg-zinc-800 border-zinc-700 text-white"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"

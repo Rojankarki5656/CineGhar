@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 
-export const API_BASE_URL = "http://localhost:8000";
+import config from "@/config/config"
+
+export const API_BASE_URL = config.localUrl;
 
 /** Extract "tt35538033" from "https://www.imdb.com/title/tt35538033/" */
 function extractImdbId(link) {

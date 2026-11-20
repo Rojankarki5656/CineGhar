@@ -1,65 +1,92 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
+import { supabase } from "@/utils/supabase/client"
 
 export default function SignupPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
-  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [showVerification, setShowVerification] = useState(false)
+  const router = useRouter()
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
-    // Validation
     if (!fullName.trim()) {
-      setError("Full name is required");
-      setLoading(false);
-      return;
+      setError("Full name is required")
+      setLoading(false)
+      return
     }
 
     if (!email.trim()) {
-      setError("Email is required");
-      setLoading(false);
-      return;
+      setError("Email is required")
+      setLoading(false)
+      return
     }
 
     if (!password || password.length < 6) {
-      setError("Password must be at least 6 characters");
-      setLoading(false);
-      return;
+      setError("Password must be at least 6 characters")
+      setLoading(false)
+      return
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
+      setError("Passwords do not match")
+      setLoading(false)
+      return
     }
 
     try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: { full_name: fullName.trim() },
+          emailRedirectTo:
+            typeof window !== "undefined"
+              ? `${window.location.origin}/login`
+              : undefined,
+        },
+      })
+
+      if (error) throw error
+
+      // If email confirmation is enabled, no session is returned yet.
+      // If disabled, `data.session` is present and user is signed in.
+      if (data.session?.user) {
+        localStorage.setItem("userId", data.session.user.id)
+        router.push("/")
+        router.refresh()
+        return
+      }
+
+      setShowVerification(true)
     } catch (err) {
-      setError("An unexpected error occurred");
-      setLoading(false);
+      const message =
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      setError(message)
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   const handleOk = () => {
-    router.push("/login");
-  };
+    router.push("/login")
+  }
 
   return (
     <div className="min-h-screen bg-black bg-[url('https://images.unsplash.com/photo-1574267432553-428d4d801b37?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center">
@@ -75,8 +102,9 @@ export default function SignupPage() {
             <div className="w-full max-w-md p-6 md:p-8 bg-black/80 rounded-lg text-center">
               <h2 className="text-3xl font-bold text-white mb-6">Verification Email Sent</h2>
               <p className="text-lg text-gray-300 mb-8">
-                A verification email has been sent to <span className="text-red-600">{email}</span>.
-                Please check your inbox (and spam folder) to verify your account.
+                A verification email has been sent to{" "}
+                <span className="text-red-600">{email}</span>. Please check your inbox (and
+                spam folder) to verify your account.
               </p>
               <Button
                 onClick={handleOk}
@@ -109,6 +137,7 @@ export default function SignupPage() {
                       className="pl-10 bg-zinc-800 border-zinc-700 text-white"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      autoComplete="name"
                     />
                   </div>
                 </div>
@@ -126,6 +155,7 @@ export default function SignupPage() {
                       className="pl-10 bg-zinc-800 border-zinc-700 text-white"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="email"
                     />
                   </div>
                 </div>
@@ -143,6 +173,7 @@ export default function SignupPage() {
                       className="pl-10 pr-10 bg-zinc-800 border-zinc-700 text-white"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -167,13 +198,18 @@ export default function SignupPage() {
                       className="pl-10 pr-10 bg-zinc-800 border-zinc-700 text-white"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
                       className="absolute right-3 top-3 text-gray-400"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
-                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -200,5 +236,5 @@ export default function SignupPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }

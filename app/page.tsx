@@ -12,9 +12,10 @@ export default function LandingPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const moviePosters = [
-    "https://i.ytimg.com/vi/1WajDWLXuVU/maxresdefault.jpg",
-    "https://i.ytimg.com/vi/Vhf7rS3T_tg/maxresdefault.jpg",
-    "https://i.ytimg.com/vi/g1sML8y5yIk/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLC039maYrS3GVG791IJkxw1XGvzAg",
+    "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQGuWHoJ0WeUd7kPj-n26nUIjmkxd1ZngxcznCw1qH0MoWfD5o_",
+    "https://m.media-amazon.com/images/M/MV5BMDE2ODhlNTUtYjdiOS00OTlmLTg5OGMtMGNjZWZmNWE4MGJiXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "https://m.media-amazon.com/images/M/MV5BNGEwYjgwOGQtYjg5ZS00Njc1LTk2ZGEtM2QwZWQ2NjdhZTE5XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "https://m.media-amazon.com/images/M/MV5BMDAyY2FhYjctNDc5OS00MDNlLThiMGUtY2UxYWVkNGY2ZjljXkEyXkFqcGc@._V1_.jpg",
   ];
 
   useEffect(() => {
@@ -32,39 +33,39 @@ export default function LandingPage() {
     <>
       <Head>
         {/* Primary Meta Tags */}
-        <title>CineGhar: Watch Nepali Movies Online Free | Latest Nepali Films Streaming</title>
+        <title>CineGhar: Watch  Movies Online Free | Latest  Films Streaming</title>
         <meta
           name="description"
-          content="Watch the latest Nepali movies, classics, and exclusive films online for free at CineGhar. Stream HD Nepali cinema, TV shows, and more—anytime, anywhere. No signup required!" />
+          content="Watch the latest  movies, classics, and exclusive films online for free at CineGhar. Stream HD  cinema, TV shows, and more—anytime, anywhere. No signup required!" />
         <meta
           name="keywords"
-          content="Nepali movies, watch Nepali movies online, free Nepali films, Nepali movie streaming, CineGhar, Nepali cinema, latest Nepali movies, Nepali TV shows, Nepali film classics, Nepali Netflix, Nepali movies HD, Nepali movies 2025, Nepali movies download, Nepali movies watch free, Nepali movies online, Nepali movies streaming, Nepali movies website, Nepali movies app, Nepali movies list, Nepali movies new release" />
+          content=" movies, watch  movies online, free  films,  movie streaming, CineGhar,  cinema, latest  movies,  TV shows,  film classics,  Netflix,  movies HD,  movies 2025,  movies download,  movies watch free,  movies online,  movies streaming,  movies website,  movies app,  movies list,  movies new release" />
         <meta name="author" content="CineGhar Nepal" />
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        <link rel="canonical" href="https://cineghar.live/" />
+        <link rel="canonical" href="https://cine-ghar.vercel.app/" />
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="CineGhar" />
-        <meta property="og:url" content="https://cineghar.live/" />
-        <meta property="og:title" content="CineGhar: Watch Nepali Movies Online Free | Latest Nepali Films Streaming" />
+        <meta property="og:url" content="https://cine-ghar.vercel.app/" />
+        <meta property="og:title" content="CineGhar: Watch  Movies Online Free | Latest  Films Streaming" />
         <meta
           property="og:description"
-          content="Stream the best Nepali movies and TV shows online for free. CineGhar is Nepal’s #1 movie streaming site for new releases, classics, and exclusive content." />
-        <meta property="og:image" content="https://cineghar.live/og-image.jpg" />
-        <meta property="og:image:alt" content="CineGhar - Nepali Movies Streaming" />
+          content="Stream the best  movies and TV shows online for free. CineGhar is Nepal’s #1 movie streaming site for new releases, classics, and exclusive content." />
+        <meta property="og:image" content="https://cine-ghar.vercel.app/og-image.jpg" />
+        <meta property="og:image:alt" content="CineGhar -  Movies Streaming" />
         <meta property="og:locale" content="en_NP" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@cineghar" />
         <meta name="twitter:creator" content="@cineghar" />
-        <meta name="twitter:url" content="https://cineghar.live/" />
-        <meta name="twitter:title" content="CineGhar: Watch Nepali Movies Online Free" />
+        <meta name="twitter:url" content="https://cine-ghar.vercel.app/" />
+        <meta name="twitter:title" content="CineGhar: Watch  Movies Online Free" />
         <meta
           name="twitter:description"
-          content="Nepali movies anytime, anywhere. CineGhar.live brings Nepali cinema online — just like Netflix for Nepal." />
-        <meta name="twitter:image" content="https://cineghar.live/og-image.jpg" />
+          content=" movies anytime, anywhere. CineGhar.live brings  cinema online — just like Netflix for Nepal." />
+        <meta name="twitter:image" content="https://cine-ghar.vercel.app/og-image.jpg" />
 
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
@@ -80,9 +81,9 @@ export default function LandingPage() {
               "@context": "https://schema.org",
               "@type": "VideoStreamingService",
               "name": "CineGhar",
-              "url": "https://cineghar.live/",
-              "logo": "https://cineghar.live/og-image.jpg",
-              "description": "Watch the latest Nepali movies, classics, and exclusive films online for free at CineGhar. Stream HD Nepali cinema, TV shows, and more—anytime, anywhere.",
+              "url": "https://cine-ghar.vercel.app/",
+              "logo": "https://cine-ghar.vercel.app/og-image.jpg",
+              "description": "Watch the latest  movies, classics, and exclusive films online for free at CineGhar. Stream HD  cinema, TV shows, and more—anytime, anywhere.",
               "sameAs": [
                 "https://www.facebook.com/cineghar",
                 "https://twitter.com/cineghar",
@@ -127,10 +128,10 @@ export default function LandingPage() {
 
           <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4 md:px-6 animate-fade-in">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
-              Unlimited Nepali Movies, TV Shows, and More
+              Unlimited  Movies, TV Shows, and More
             </h2>
             <p className="text-xl md:text-2xl mb-8 text-gray-200 max-w-3xl">
-              Discover the best of Nepali entertainment. Watch anywhere, anytime.
+              Discover the best of  entertainment. Watch anywhere, anytime.
             </p>
             <p className="text-lg md:text-xl mb-10 text-gray-300 max-w-2xl">
               Ready to dive in? Join CineGhar today and start streaming.
@@ -177,7 +178,7 @@ export default function LandingPage() {
                   Watch Offline Anytime
                 </h2>
                 <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-                  Download your favorite Nepali movies and shows to enjoy on the go, no internet required.
+                  Download your favorite  movies and shows to enjoy on the go, no internet required.
                 </p>
               </div>
               <div className="flex-1">
@@ -199,7 +200,7 @@ export default function LandingPage() {
               Join CineGhar Today
             </h2>
             <p className="text-lg md:text-xl text-gray-300 mb-10">
-              Start streaming the best Nepali entertainment with a subscription that fits your needs.
+              Start streaming the best  entertainment with a subscription that fits your needs.
             </p>
             <Button
               onClick={handleGetStarted}

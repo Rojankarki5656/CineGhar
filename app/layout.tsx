@@ -6,36 +6,36 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 // Base site URL
-const baseUrl = "https://cineghar.live"; // 🔁 Update with your actual domain
+const baseUrl = "https://cine-ghar.vercel.app"; // 🔁 Update with your actual domain
 
 export const metadata: Metadata = {
   title: {
-    default: "Cine Ghar – Watch Nepali & Indian Movies Online",
+    default: "Cine Ghar – Watch  & Indian Movies Online",
     template: "%s | Cine Ghar",
   },
-  description: "Stream Nepali and Indian movies online in HD. Watch latest films, dramas, and web series on Cine Ghar – your ultimate movie hub.",
+  description: "Stream  and Indian movies online in HD. Watch latest films, dramas, and web series on Cine Ghar – your ultimate movie hub.",
   keywords: [
-    "Nepali movies", 
+    " movies", 
     "Indian movies", 
     "Cine Ghar", 
     "Watch movies online", 
-    "Free Nepali films", 
+    "Free  films", 
     "HD movies", 
     "Movie streaming Nepal",
     "Online cinema",
-    "Nepali cinema",
+    " cinema",
     "Indian cinema",
-    "Latest Nepali movies",
+    "Latest  movies",
     "Latest Indian movies",
-    "Nepali web series",
+    " web series",
     "Indian web series",
-    "Nepali dramas",
+    " dramas",
     "Indian dramas",
-    "Watch Nepali movies",
+    "Watch  movies",
     "Watch Indian movies",
     "Cine Ghar movies",
     "Cine Ghar streaming",
-    "Cine Ghar Nepali movies",
+    "Cine Ghar  movies",
     "Cine Ghar Indian movies",
     "Cine Ghar watch online",
     "Cine Ghar free movies",
@@ -69,13 +69,15 @@ export const metadata: Metadata = {
     "Cine Ghar movie streaming HD",
     "Cine Ghar movie streaming Nepal",
     "Cine Ghar movie streaming India",
-    "Nepali movies online",
-    "Nepali movies download",
-    "Nepali movies free",
-    "Watch Nepali movies online",
-    "Watch Nepali movies free",
-    "Watch Nepali movies HD",
-    "Watch Nepali movies for free",
+    "CinemaGhar",
+    "Cinema Ghar",
+    " movies online",
+    " movies download",
+    " movies free",
+    "Watch movies online",
+    "Watch movies free",
+    "Watch movies HD",
+    "Watch movies for free",
   ],
   authors: [{ name: "Cine Ghar Team", url: baseUrl }],
   robots: "index, follow",
@@ -91,22 +93,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_NP",
     url: baseUrl,
-    siteName: "FilmySansar",
-    title: "FilmySansar – Watch Nepali & Indian Movies Online",
-    description: "Stream Nepali and Indian movies online in HD. Watch latest films, dramas, and web series on FilmySansar.",
+    siteName: "Cine Ghar", // ✅ Fixed
+    title: "Cine Ghar – Watch English & Indian Movies Online", // ✅ Fixed
+    description: "Stream  and Indian movies online in HD. Watch latest films, dramas, and web series on Cine Ghar.", // ✅ Fixed
     images: [
       {
-        url: `${baseUrl}/favicon.jpg`, // ✅ Use your real OG image
+        url: `${baseUrl}/og-image.jpg`, // 💡 TIP: Use a real 1200x630 banner image, not favicon.jpg
         width: 1200,
         height: 630,
-        alt: "Cine Ghar – Watch Nepali & Indian Movies Online",
+        alt: "Cine Ghar – Watch  & Indian Movies Online",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cine Ghar – Watch Nepali & Indian Movies Online",
-    description: "Stream Nepali and Indian movies in HD.",
+    title: "Cine Ghar – Watch  & Indian Movies Online",
+    description: "Stream  and Indian movies in HD.",
     site: "@cineghar", // 🛠️ Your Twitter handle
     creator: "@cineghar",
     images: [`${baseUrl}/favicon.jpg`],

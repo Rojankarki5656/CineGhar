@@ -15,6 +15,7 @@ import {
 } from "@/hooks/chartService";
 import type { ChartMovie } from "@/hooks/chartService";
 import type { MovieCard } from "@/lib/movies";
+import { browseChart } from "@/lib/browse-urls";
 
 function toMovieCard(m: ChartMovie): MovieCard {
   return {
@@ -29,52 +30,67 @@ function toMovieCard(m: ChartMovie): MovieCard {
 }
 
 export default function HomePage() {
-  const { data: popularMovies, loading: pmLoading, error: pmError } =
-    usePopularMovies("US");
-  const { data: topMovies, loading: tmLoading } = useTopMovies("US");
-  const { data: popularTv, loading: ptLoading } = usePopularTv("US");
-  const { data: topTv, loading: ttLoading } = useTopTv("US");
-  const { data: boxOffice, loading: boLoading, meta: boMeta } =
-    useBoxOffice("US");
+  const {
+    data: popularMovies,
+    loading: pmLoading,
+    error: pmError,
+  } = usePopularMovies("US", 10);
+  const { data: topMovies, loading: tmLoading } = useTopMovies("US", 10);
+  const { data: popularTv, loading: ptLoading } = usePopularTv("US", 10);
+  const { data: topTv, loading: ttLoading } = useTopTv("US", 10);
+  const {
+    data: boxOffice,
+    loading: boLoading,
+    meta: boMeta,
+  } = useBoxOffice("US");
+
+  // Defensive: hooks can return undefined before the first fetch resolves.
+  const safePopularMovies = popularMovies ?? [];
+  const safeTopMovies = topMovies ?? [];
+  const safePopularTv = popularTv ?? [];
+  const safeTopTv = topTv ?? [];
+  const safeBoxOffice = boxOffice ?? [];
 
   const heroMovies = [
-    ...(popularMovies ?? []).slice(0, 3),
-    ...(topMovies ?? []).slice(0, 2),
+    ...safePopularMovies.slice(0, 3),
+    ...safeTopMovies.slice(0, 2),
   ].slice(0, 5);
 
-  const heroLoading = pmLoading && popularMovies.length === 0;
+  const heroLoading = pmLoading && safePopularMovies.length === 0;
 
   return (
     <>
       <Head>
         <title>
-          CineGhar: Watch Nepali & Indian Movies Online Free | Latest HD
-          Streaming
+          CineGhar: Watch & Indian Movies Online Free | Latest HD Streaming
         </title>
         <meta
           name="description"
-          content="Watch trending Nepali and Indian movies, classics, and new releases online for free in HD. CineGhar is Nepal's #1 movie streaming site. No signup required!"
+          content="Watch trending  and Indian movies, classics, and new releases online for free in HD. CineGhar is Nepal's #1 movie streaming site. No signup required!"
         />
         <meta
           name="keywords"
-          content="Nepali movies, Indian movies, watch online, free streaming, Nepali classics, Hindi movies, action movies, family movies, CineGhar, Nepali cinema, Nepali movie 2025, Nepali movie download, Nepali movie watch free, Nepali movie streaming, Nepali movie website, Nepali movie app, Nepali movie list, Nepali movie new release"
+          content=" movies, Indian movies, watch online, free streaming,  classics, Hindi movies, action movies, family movies, CineGhar,  cinema,  movie 2025,  movie download,  movie watch free,  movie streaming,  movie website,  movie app,  movie list,  movie new release"
         />
         <meta name="author" content="CineGhar Nepal" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://cineghar.live/home" />
+        <link rel="canonical" href="https://cine-ghar.vercel.app/home" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="CineGhar" />
-        <meta property="og:url" content="https://cineghar.live/home" />
+        <meta property="og:url" content="https://cine-ghar.vercel.app/home" />
         <meta
           property="og:title"
-          content="CineGhar: Watch Nepali & Indian Movies Online Free | Latest HD Streaming"
+          content="CineGhar: Watch  & Indian Movies Online Free | Latest HD Streaming"
         />
         <meta
           property="og:description"
-          content="Stream trending, new releases, and classic Nepali and Indian movies online for free."
+          content="Stream trending, new releases, and classic  and Indian movies online for free."
         />
-        <meta property="og:image" content="https://cineghar.live/og-image.jpg" />
+        <meta
+          property="og:image"
+          content="https://cine-ghar.vercel.app/og-image.jpg"
+        />
         <meta property="og:locale" content="en_NP" />
 
         <meta name="twitter:card" content="summary_large_image" />
@@ -82,15 +98,15 @@ export default function HomePage() {
         <meta name="twitter:creator" content="@cineghar" />
         <meta
           name="twitter:title"
-          content="CineGhar: Watch Nepali & Indian Movies Online Free"
+          content="CineGhar: Watch  & Indian Movies Online Free"
         />
         <meta
           name="twitter:description"
-          content="Nepali and Indian movies anytime, anywhere."
+          content=" and Indian movies anytime, anywhere."
         />
         <meta
           name="twitter:image"
-          content="https://cineghar.live/og-image.jpg"
+          content="https://cine-ghar.vercel.app/og-image.jpg"
         />
 
         <link rel="icon" href="/favicon.ico" />
@@ -103,9 +119,9 @@ export default function HomePage() {
         "@context": "https://schema.org",
         "@type": "VideoStreamingService",
         "name": "CineGhar",
-        "url": "https://cineghar.live/home",
-        "logo": "https://cineghar.live/og-image.jpg",
-        "description": "Watch trending Nepali and Indian movies online for free in HD.",
+        "url": "https://cine-ghar.vercel.app/home",
+        "logo": "https://cine-ghar.vercel.app/og-image.jpg",
+        "description": "Watch trending  and Indian movies online for free in HD.",
         "sameAs": [
           "https://www.facebook.com/cineghar",
           "https://twitter.com/cineghar",
@@ -135,11 +151,13 @@ export default function HomePage() {
           />
 
           <div className="px-4 md:px-6 py-8 space-y-10">
-            {/* Trending */}
+            {/* Trending = popular-movies (chart cap: 100) */}
             <MovieRow
               title="Trending Now"
-              movies={popularMovies.map(toMovieCard)}
+              movies={safePopularMovies.map(toMovieCard)}
               loading={pmLoading}
+              href={browseChart("popular-movies")}
+              viewMoreLabel="See all 100"
             />
             {pmError && (
               <p className="text-sm text-red-400 -mt-8">
@@ -147,10 +165,13 @@ export default function HomePage() {
               </p>
             )}
 
+            {/* Top Rated = top-movies (chart cap: 250) */}
             <MovieRow
               title="Top Rated Movies"
-              movies={topMovies.map(toMovieCard)}
+              movies={safeTopMovies.map(toMovieCard)}
               loading={tmLoading}
+              href={browseChart("top-movies")}
+              viewMoreLabel="See all 250"
             />
 
             <MovieRow
@@ -159,20 +180,27 @@ export default function HomePage() {
                   ? `In Theaters — Weekend of ${boMeta.weekend.start_date}`
                   : "Box Office"
               }
-              movies={boxOffice.map(toMovieCard)}
+              movies={safeBoxOffice.map(toMovieCard)}
               loading={boLoading}
+              href={browseChart("box-office")}
             />
 
+            {/* Popular TV = popular-tv (chart cap: 100) */}
             <MovieRow
               title="Popular TV Shows"
-              movies={popularTv.map(toMovieCard)}
+              movies={safePopularTv.map(toMovieCard)}
               loading={ptLoading}
+              href={browseChart("popular-tv")}
+              viewMoreLabel="See all 100"
             />
 
+            {/* Top Rated TV = top-tv (chart cap: 250) */}
             <MovieRow
               title="Top Rated TV"
-              movies={topTv.map(toMovieCard)}
+              movies={safeTopTv.map(toMovieCard)}
               loading={ttLoading}
+              href={browseChart("top-tv")}
+              viewMoreLabel="See all 250"
             />
           </div>
         </main>
